@@ -1,0 +1,7 @@
+Extract ONLY topicName and description from the user_prompt.
+Return valid JSON only.
+
+user_prompt:{{prompt}}
+
+Example:
+{"topicName":"Topic","description":"Description"}

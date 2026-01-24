@@ -1,0 +1,68 @@
+{
+  "course": {
+    "title": "Master Segment Tree for Efficient Range Queries",
+    "description": "Learn how to solve complex range queries using Segment Tree, a powerful data structure. This course is designed for programmers and data scientists who want to improve their problem-solving skills and optimize their code for large datasets. By the end of this course, you'll be able to implement Segment Tree from scratch and use it to solve various problems, including range sum queries, range minimum/maximum queries, and more. Real-world applications include data compression, image processing, and scientific simulations."
+  },
+  "modules": [
+    {
+      "moduleIndex": 1,
+      "title": "Segment Tree Fundamentals",
+      "description": "Understand the basics of Segment Tree and its applications. Learn how to represent a Segment Tree and perform basic operations like range sum queries.",
+      "estimatedTime": "8-12 hours",
+      "topics": [
+        "What is Segment Tree?",
+        "Segment Tree Representation",
+        "Range Sum Queries",
+        "Segment Tree Operations"
+      ]
+    },
+    {
+      "moduleIndex": 2,
+      "title": "Building Segment Tree",
+      "description": "Learn how to build a Segment Tree from scratch and perform range sum queries. Understand how to handle updates and queries efficiently.",   
+      "estimatedTime": "8-12 hours",
+      "topics": [
+        "Building Segment Tree from Scratch",
+        "Range Sum Queries with Updates",
+        "Handling Range Queries",
+        "Segment Tree Traversal"
+      ]
+    },
+    {
+      "moduleIndex": 3,
+      "title": "Advanced Segment Tree Applications",
+      "description": "Learn how to use Segment Tree to solve complex problems like range minimum/maximum queries, prefix sum queries, and more.",
+      "estimatedTime": "8-12 hours",
+      "topics": [
+        "Range Minimum/Maximum Queries",
+        "Prefix Sum Queries",
+        "Segment Tree with Lazy Propagation",
+        "Segment Tree with Range Updates"
+      ]
+    },
+    {
+      "moduleIndex": 4,
+      "title": "Optimizing Segment Tree",
+      "description": "Understand how to optimize Segment Tree for large datasets and improve its performance. Learn how to use techniques like lazy propagation and range updates.",
+      "estimatedTime": "4-8 hours",
+      "topics": [
+        "Lazy Propagation",
+        "Range Updates",
+        "Segment Tree with Interval Updates",
+        "Segment Tree with Range Queries"
+      ]
+    },
+    {
+      "moduleIndex": 5,
+      "title": "Segment Tree in Real-World Applications",
+      "description": "Learn how to apply Segment Tree to real-world problems like data compression, image processing, and scientific simulations.",
+      "estimatedTime": "4-8 hours",
+      "topics": [
+        "Data Compression",
+        "Image Processing",
+        "Scientific Simulations",
+        "Segment Tree in Machine Learning"
+      ]
+    }
+  ]
+}
