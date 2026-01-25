@@ -1,0 +1,23 @@
+~~~~>  npx nodemon server.js
+
+~~~~> npm start
+
+
+
+~~>  “bcrypt” → how internally works.
+
+~~> res.status(400) → bad request.
+
+~~> res.status(201) 
+→ client’s request got successfully accepted.
+
+~~> res.status(500)
+→ internal server error : may be a catch block triggerd.
+
+
+~~> “JWT” → how internally works 
+
+~~~> In frontend res.ok means successful get from backend
+
+~~~> while submitting e.preventDefault() ???
+

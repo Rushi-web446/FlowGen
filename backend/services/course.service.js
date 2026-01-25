@@ -8,10 +8,11 @@ const { findById, saveCourseOutlineToDB, findRecentCoursesByUser, updateLastAcce
 const { getYouTubeVideos } = require("../repository/YouTube.repository");
 
 
-const saveCourseOutlineToDBService = async ({ outline, userId }) => {
-  console.log("\n\n\n\n  --> reaching :  backend/services/course.service.js  :::: . \n\n\n", outline, "\n\n");
+const saveCourseOutlineToDBService = async (outline, userId) => {
+  console.log("\n\n\n\n  --> reaching :  backend/services/course.service.js/saveCourseOutlineToDBService . \n\n\n", outline, "\n\n");
 
   if (!outline?.course || !outline?.modules) {
+    console.log("\n\n\n\n comes from backend/services/course.service.js/saveCourseOutlineToDBService line no. 15 \n\n\n\n");
     throw new Error("Invalid course outline structure");
   }
 
@@ -217,36 +218,51 @@ const checkLessonExistsService = async ({
 
 
 
-
-
-const saveLessonService = async ({
-  courseId,
-  userId,
+const saveLessonService = async (
+  courseIdOrObj,
   moduleIndex,
   lessonIndex,
-  lesson, // entire lesson object or content
-}) => {
-  console.log("\n\n\n\n  --> reaching :  backend/services/course.service.js . \n\n\n");
-  if (!courseId || !userId || moduleIndex === null || lessonIndex === null) {
+  lesson
+) => {
+  let courseId = courseIdOrObj;
+  let actualModuleIndex = moduleIndex;
+  let actualLessonIndex = lessonIndex;
+  let actualLesson = lesson;
+
+  // Handle object-based arguments (used in some controllers)
+  if (typeof courseIdOrObj === "object" && !courseIdOrObj._bsontype && courseIdOrObj.courseId) {
+    courseId = courseIdOrObj.courseId;
+    actualModuleIndex = courseIdOrObj.moduleIndex;
+    actualLessonIndex = courseIdOrObj.lessonIndex;
+    actualLesson = courseIdOrObj.lesson;
+  }
+
+  console.log(
+    "\n\n\n\n  --> reaching : backend/services/course.service.js/saveLessonService \n\n\n",
+    { courseId, moduleIndex: actualModuleIndex, lessonIndex: actualLessonIndex }
+  );
+
+  if (!courseId || actualModuleIndex == null || actualLessonIndex == null) {
     throw new Error("Missing required parameters for saving lesson");
   }
 
-  // Revert to saving into 'content' field
+  // Normalize lesson payload
   let lessonPayload = {};
 
-  if (lesson && lesson.data) {
-    lessonPayload.content = lesson.data;
-  } else if (lesson && lesson.content) {
-    lessonPayload = lesson;
+  if (actualLesson && actualLesson.data) {
+    lessonPayload.content = actualLesson.data;
+  } else if (actualLesson && actualLesson.content) {
+    lessonPayload = actualLesson;
   } else {
-    lessonPayload.content = lesson;
+    lessonPayload.content = actualLesson;
   }
+
+  console.log("🟡 Lesson payload normalized");
 
   const savedLesson = await saveLesson(
     courseId,
-    userId,
-    moduleIndex,
-    lessonIndex,
+    actualModuleIndex,
+    actualLessonIndex,
     lessonPayload
   );
 
@@ -254,8 +270,17 @@ const saveLessonService = async ({
     throw new Error("Failed to save lesson (Course/Module/Lesson not found)");
   }
 
+  console.log("🟢 Lesson successfully saved in DB");
+
   return savedLesson;
 };
+
+module.exports = {
+  saveLessonService,
+};
+
+
+
 
 module.exports = {
   saveCourseOutlineToDBService, getRecentCoursesService, getCourseDetailsWithProgressService,

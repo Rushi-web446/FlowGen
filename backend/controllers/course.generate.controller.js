@@ -6,7 +6,7 @@ const {
 } = require("../services/course.generate.service");
 
 // [NEW] Import the YouTube video service
-const { getYouTubeVideosService } = require("../services/YouTube.service");
+// const { getYouTubeVideosService } = require("../services/YouTube.service");
 
 const {
   getOutlinePrompt,

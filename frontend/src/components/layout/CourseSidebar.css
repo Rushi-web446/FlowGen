@@ -1,0 +1,184 @@
+/* components/layout/CourseSidebar.css */
+
+.course-sidebar {
+    width: 320px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1rem;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+}
+
+.course-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.course-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.3);
+    border-radius: 10px;
+}
+
+.sidebar-header {
+    margin-bottom: 2.5rem;
+    padding: 0 1rem;
+}
+
+.course-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    transition: color 0.2s;
+}
+
+.course-back-btn:hover {
+    color: #f8fafc;
+}
+
+.sidebar-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #f8fafc;
+    line-height: 1.4;
+}
+
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.module-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.module-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    padding: 0 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.lesson-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.lesson-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    border: 1px solid transparent;
+}
+
+.lesson-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.lesson-item.active {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+.lesson-status-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1.5px solid #334155;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: transparent;
+    transition: all 0.3s ease;
+}
+
+.lesson-item.completed .lesson-status-icon {
+    background: #10b981;
+    border-color: #10b981;
+    color: white;
+}
+
+.lesson-item.active .lesson-status-icon {
+    border-color: #6366f1;
+}
+
+.lesson-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.lesson-name {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: #cbd5e1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lesson-item.active .lesson-name {
+    color: #f8fafc;
+    font-weight: 600;
+}
+
+.lesson-item.completed .lesson-name {
+    color: #94a3b8;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 2rem;
+}
+
+.progress-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 1.25rem;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8125rem;
+    color: #94a3b8;
+    margin-bottom: 0.75rem;
+}
+
+.progress-bar-bg {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(to right, #6366f1, #a855f7);
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}

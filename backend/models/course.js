@@ -14,8 +14,13 @@ const lessonSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed, // stores validated AI JSON
       default: null,
     },
+    isGenerated: {
+      type: String,
+      enum: ["", "PENDING", "GENERATING", "GENERATED", "FAILED"],
+      default: ""
+    },
 
-    isGenerated: { type: Boolean, default: false },
+    // isGenerated: { type: Boolean, default: false },
     isCompleted: { type: Boolean, default: false },
   },
   { _id: true }

@@ -15,8 +15,11 @@ const getModule = async (courseId, moduleIndex) => {
   );
 };
 
+
+/**
+ * Get a lesson by courseId, moduleIndex, lessonIndex
+ */
 const getLesson = async (courseId, moduleIndex, lessonIndex) => {
-  console.log("\n\n\n\n  --> reaching :  backend/repository/course.repository.js . \n\n\n");
   const course = await Course.findById(courseId);
   if (!course) return null;
 
@@ -25,21 +28,57 @@ const getLesson = async (courseId, moduleIndex, lessonIndex) => {
   );
   if (!module) return null;
 
-
-  return module.lessons.find(
+  const lesson = module.lessons.find(
     (l) => l.lessonIndex === Number(lessonIndex)
   );
+
+  return lesson;
+};
+
+/**
+ * Mark lesson status (PENDING / GENERATED)
+ */
+const updateLessonStatus = async (
+  courseId,
+  moduleIndex,
+  lessonIndex,
+  status
+) => {
+  const course = await Course.findById(courseId);
+  if (!course) return;
+
+  const module = course.modules.find(
+    (m) => m.moduleIndex === Number(moduleIndex)
+  );
+  if (!module) return;
+
+  const lesson = module.lessons.find(
+    (l) => l.lessonIndex === Number(lessonIndex)
+  );
+  if (!lesson) return;
+
+  lesson.isGenerated = status;
+
+  await course.save();
+};
+
+module.exports = {
+  getLesson,
+  updateLessonStatus,
 };
 
 
+
 const saveCourseOutlineToDB = async (course) => {
-  console.log("\n\n\n\n  --> reaching :  backend/repository/course.repository.js . \n\n\n");
+  console.log("\n\n\n\n  --> reaching :  backend/repository/course.repository.js/saveCourseOutlineToDB . \n\n\n");
   const newCourse = await Course.create(course);
+  console.log("\n\n\n from backend/repository/course.repository.js/saveCourseOutlineToDB  : \n\n : course outline saved sucessfully. \n\n");
+
   return newCourse._id;
 }
 
 
-const findRecentCoursesByUser = async (userId, limit = 3) => {
+const findRecentCoursesByUser = async (userId, limit = 10) => {
   console.log("\n\n\n\n  --> reaching :  backend/repository/course.repository.js . \n\n\n");
   return await Course.find({ userId })
     .sort({ lastAccessedAt: -1 })
@@ -141,14 +180,13 @@ const checkLessonExistsForUser = async ({
 
 const saveLesson = async (
   courseId,
-  userId,
   moduleIndex,
   lessonIndex,
   lessonObj
 ) => {
   console.log("\n\n\n\n  --> reaching :  backend/repository/course.repository.js . \n\n\n");
   // 1️⃣ Find course (ONLY ObjectId here)
-  const course = await Course.findOne({ _id: courseId, userId });
+  const course = await Course.findOne({ _id: courseId });
   if (!course) return null;
 
   // 2️⃣ Find module by moduleIndex
@@ -168,11 +206,13 @@ const saveLesson = async (
 
   // 5️⃣ Mark lesson as generated if content exists
   if (lessonObj.content) {
-    lesson.isGenerated = true;
+    lesson.isGenerated = "GENERATED";
   }
-
+  console.log("\n\n\n\n at last we just need to saved the lesson from repository \n\n\n");
   // 6️⃣ Save parent document
   await course.save();
+
+  console.log("\n\n\n\n saved the lesson sucessfully. \n\n\n");
 
   return lesson;
 };
@@ -191,4 +231,5 @@ module.exports = {
   findLessonForUser,
   checkLessonExistsForUser,
   saveLesson,
+  updateLessonStatus,
 };
