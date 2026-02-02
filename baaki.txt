@@ -1,0 +1,24 @@
+
+
+ Milestone 10: Multilingual & TTS
+ Translate lesson content to Hinglish using Gemini API.
+ Generate Audio Narrations (TTS) for lessons.
+
+ 
+ Milestone 13: Project Showcase
+ Populate root 
+README.md
+ with links and project details.
+ Add Resume-ready bullets.
+
+
+
+
+
+
+
+
+
+
+ Milestone 12: CI/CD Pipeline
+ Set up GitHub Actions for automated deployment sanity checks.

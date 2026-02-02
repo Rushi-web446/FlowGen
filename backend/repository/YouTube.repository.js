@@ -1,9 +1,7 @@
 const axios = require("axios");
 
 const getYouTubeVideos = async (query) => {
-    console.log("\n\n\n\n  --> reaching :  backend/repository/YouTube.repository.js . \n\n\n");
     try {
-        // 1️⃣ Search
         const searchRes = await axios.get(
             `${process.env.BASE_URL}/search`,
             {
@@ -26,13 +24,11 @@ const getYouTubeVideos = async (query) => {
 
         if (!searchRes.data?.items?.length) return [];
 
-        // 2️⃣ Extract IDs
         const videoIds = searchRes.data.items
             .map(v => v.id.videoId)
             .filter(Boolean)
             .join(",");
 
-        // 3️⃣ Fetch statistics
         const statsRes = await axios.get(
             `${process.env.BASE_URL}/videos`,
             {
@@ -44,7 +40,6 @@ const getYouTubeVideos = async (query) => {
             }
         );
 
-        // 4️⃣ PRACTICAL HARD RELEVANCE FILTER
         const keywords = query
             .toLowerCase()
             .split(" ")
@@ -61,7 +56,6 @@ const getYouTubeVideos = async (query) => {
             return matchCount >= MATCH_THRESHOLD;
         });
 
-        // 5️⃣ SORT ONLY BY VIEWS & PICK TOP 4
         return strictlyRelevantVideos
             .map(video => ({
                 videoId: video.id,

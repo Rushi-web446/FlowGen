@@ -1,6 +1,5 @@
 import Section from "./Section";
 
-// src/components/lesson/LessonContent.jsx
 const LessonContent = ({ content }) => {
   if (!content) return null;
 

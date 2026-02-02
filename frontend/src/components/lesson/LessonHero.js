@@ -1,4 +1,3 @@
-// components/lesson/LessonHero.jsx
 const LessonHero = ({ title, description }) => {
   return (
     <div className="lesson-hero">

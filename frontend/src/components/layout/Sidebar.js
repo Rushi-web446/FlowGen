@@ -6,15 +6,8 @@ const Sidebar = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    // Get user from localStorage, fallback to dummy
     const user = JSON.parse(localStorage.getItem('user')) || { name: 'Rushi', email: 'rushi@example.com' };
 
-    const navItems = [
-        { name: 'Home', path: '/home', icon: '🏠' },
-        { name: 'My Courses', path: '/my-courses', icon: '📚' },
-        { name: 'Settings', path: '/settings', icon: '⚙️' },
-        { name: 'Logout', path: '/logout', icon: '🚪', action: 'logout' },
-    ];
 
     const handleLogout = () => {
         localStorage.removeItem('token');

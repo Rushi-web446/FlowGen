@@ -16,13 +16,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const serverAdapter = require("./bullBoard");
-
-
-
 connectDB();
-
-app.use("/admin/queues", serverAdapter.getRouter());
 
 // Health Check
 app.get("/", (req, res) => {

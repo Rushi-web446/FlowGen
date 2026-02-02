@@ -5,7 +5,7 @@ export const useRecentCourses = (
   isAuthenticated,
   userReady,
   getAccessTokenSilently,
-  refreshKey // 👈 receive it
+  refreshKey 
 ) => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);

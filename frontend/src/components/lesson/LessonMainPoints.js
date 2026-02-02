@@ -1,5 +1,4 @@
 import Section from "./Section";
-// components/lesson/LessonMainPoints.jsx
 const LessonMainPoints = ({ points }) => {
   if (!points || points.length === 0) return null;
 

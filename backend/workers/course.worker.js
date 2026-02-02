@@ -21,18 +21,14 @@ const courseWorker = new Worker(
   async (job) => {
     const { prompt, userId } = job.data;
 
-    console.log("\n\n\n from worker/course.worker.js : \n\n printing prompt : \n\n", prompt, "\n\n");
 
-    console.log("Processing course job:", job.id);
 
     const generatedOutline = await generateOutlineService({ prompt });
 
-    console.log("\n\n\n from worker/course.worker.js printing generated outline : \n\n\n", generatedOutline, "\n\n\n\n");
 
 
     const courseId = await saveCourseOutlineToDBService(generatedOutline, userId);
 
-    console.log("\n\n\n from worker/course.worker.js printing generated courseId : \n\n\n", courseId, "\n\n\n\n");
 
 
 

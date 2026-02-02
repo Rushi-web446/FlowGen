@@ -1,12 +1,10 @@
 const Course = require("../models/course");
 
 const findById = async (courseId) => {
-  console.log("\n\n\n\n  --> reaching :  backend/repository/course.repository.js . \n\n\n");
   return Course.findById(courseId);
 };
 
 const getModule = async (courseId, moduleIndex) => {
-  console.log("\n\n\n\n  --> reaching :  backend/repository/course.repository.js . \n\n\n");
   const course = await Course.findById(courseId);
   if (!course) return null;
 
@@ -16,9 +14,6 @@ const getModule = async (courseId, moduleIndex) => {
 };
 
 
-/**
- * Get a lesson by courseId, moduleIndex, lessonIndex
- */
 const getLesson = async (courseId, moduleIndex, lessonIndex) => {
   const course = await Course.findById(courseId);
   if (!course) return null;
@@ -35,9 +30,6 @@ const getLesson = async (courseId, moduleIndex, lessonIndex) => {
   return lesson;
 };
 
-/**
- * Mark lesson status (PENDING / GENERATED)
- */
 const updateLessonStatus = async (
   courseId,
   moduleIndex,
@@ -70,16 +62,13 @@ module.exports = {
 
 
 const saveCourseOutlineToDB = async (course) => {
-  console.log("\n\n\n\n  --> reaching :  backend/repository/course.repository.js/saveCourseOutlineToDB . \n\n\n");
   const newCourse = await Course.create(course);
-  console.log("\n\n\n from backend/repository/course.repository.js/saveCourseOutlineToDB  : \n\n : course outline saved sucessfully. \n\n");
 
   return newCourse._id;
 }
 
 
 const findRecentCoursesByUser = async (userId, limit = 10) => {
-  console.log("\n\n\n\n  --> reaching :  backend/repository/course.repository.js . \n\n\n");
   return await Course.find({ userId })
     .sort({ lastAccessedAt: -1 })
     .limit(limit)
@@ -88,7 +77,6 @@ const findRecentCoursesByUser = async (userId, limit = 10) => {
 
 
 const updateLastAccessed = async (courseId) => {
-  console.log("\n\n\n\n  --> reaching :  backend/repository/course.repository.js . \n\n\n");
   return await Course.updateOne(
     { _id: courseId },
     { $set: { lastAccessedAt: new Date() } }
@@ -116,10 +104,8 @@ const markLessonCompleted = async ({
   );
   if (!lesson) throw new Error("Lesson not found");
 
-  // Mark lesson completed
   lesson.isCompleted = true;
 
-  // If all lessons completed → mark module completed
   const allLessonsCompleted = module.lessons.every(
     (l) => l.isCompleted
   );
@@ -184,35 +170,26 @@ const saveLesson = async (
   lessonIndex,
   lessonObj
 ) => {
-  console.log("\n\n\n\n  --> reaching :  backend/repository/course.repository.js . \n\n\n");
-  // 1️⃣ Find course (ONLY ObjectId here)
   const course = await Course.findOne({ _id: courseId });
   if (!course) return null;
 
-  // 2️⃣ Find module by moduleIndex
   const module = course.modules.find(
     (m) => m.moduleIndex === Number(moduleIndex)
   );
   if (!module) return null;
 
-  // 3️⃣ Find lesson by lessonIndex
   const lesson = module.lessons.find(
     (l) => l.lessonIndex === Number(lessonIndex)
   );
   if (!lesson) return null;
 
-  // 4️⃣ Update lesson fields safely
   Object.assign(lesson, lessonObj);
 
-  // 5️⃣ Mark lesson as generated if content exists
   if (lessonObj.content) {
     lesson.isGenerated = "GENERATED";
   }
-  console.log("\n\n\n\n at last we just need to saved the lesson from repository \n\n\n");
-  // 6️⃣ Save parent document
   await course.save();
 
-  console.log("\n\n\n\n saved the lesson sucessfully. \n\n\n");
 
   return lesson;
 };

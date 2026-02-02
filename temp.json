@@ -1,0 +1,185 @@
+{
+    "message": "course Outline Generated sucsessfully",
+    "data": {
+        "course": {
+            "title": "Mastery of Two Pointer Technique for Competitive Programming",
+            "description": "Learn to solve complex problems using the two-pointer technique with a focus on candidate master level.",
+            "courseObjective": "Solve complex problems using the two-pointer technique with a time complexity of O(n) or better.",
+            "durationDays": 30,
+            "skillsGained": [
+                "Two Pointer Technique",
+                "Competitive Programming"
+            ]
+        },
+        "modules": [
+            {
+                "moduleIndex": 1,
+                "title": "Foundations of Two Pointer Technique",
+                "moduleObjective": "Understand the basic concepts of two-pointer technique and its applications.",
+                "coveredConcepts": [
+                    "Two Pointer Technique",
+                    "Array Manipulation"
+                ],
+                "excludedConcepts": [
+                    "Dynamic Programming",
+                    "Greedy Algorithm"
+                ],
+                "lessons": [
+                    {
+                        "lessonIndex": 1,
+                        "title": "Introduction to Two Pointer Technique",
+                        "briefDescription": "Learn to use two pointers to solve problems involving array manipulation.",
+                        "estimatedTime": "1.5",
+                        "deliverables": "Implement a basic two-pointer technique to solve an array manipulation problem."
+                    },
+                    {
+                        "lessonIndex": 2,
+                        "title": "Two Pointer Technique for Array Pairs",
+                        "briefDescription": "Learn to use two pointers to solve problems involving array pairs.",
+                        "estimatedTime": "1.5",
+                        "deliverables": "Implement a two-pointer technique to solve an array pairs problem."
+                    },
+                    {
+                        "lessonIndex": 3,
+                        "title": "Two Pointer Technique for Array Subarrays",
+                        "briefDescription": "Learn to use two pointers to solve problems involving array subarrays.",
+                        "estimatedTime": "1.5",
+                        "deliverables": "Implement a two-pointer technique to solve an array subarrays problem."
+                    },
+                    {
+                        "lessonIndex": 4,
+                        "title": "Two Pointer Technique for Array Intersection",
+                        "briefDescription": "Learn to use two pointers to solve problems involving array intersection.",
+                        "estimatedTime": "1.5",
+                        "deliverables": "Implement a two-pointer technique to solve an array intersection problem."
+                    }
+                ]
+            },
+            {
+                "moduleIndex": 2,
+                "title": "Implementation and Core Mechanics",
+                "moduleObjective": "Understand how to implement the two-pointer technique in real-world scenarios.",
+                "coveredConcepts": [
+                    "Implementation",
+                    "Core Mechanics"
+                ],
+                "excludedConcepts": [
+                    "Advanced Two Pointer Technique",
+                    "Optimization"
+                ],
+                "lessons": [
+                    {
+                        "lessonIndex": 1,
+                        "title": "Implementing Two Pointer Technique in C++",
+                        "briefDescription": "Learn to implement the two-pointer technique in C++.",
+                        "estimatedTime": "1.5",
+                        "deliverables": "Implement a two-pointer technique in C++ to solve an array manipulation problem."
+                    },
+                    {
+                        "lessonIndex": 2,
+                        "title": "Implementing Two Pointer Technique in Java",
+                        "briefDescription": "Learn to implement the two-pointer technique in Java.",
+                        "estimatedTime": "1.5",
+                        "deliverables": "Implement a two-pointer technique in Java to solve an array manipulation problem."
+                    },
+                    {
+                        "lessonIndex": 3,
+                        "title": "Implementing Two Pointer Technique in Python",
+                        "briefDescription": "Learn to implement the two-pointer technique in Python.",
+                        "estimatedTime": "1.5",
+                        "deliverables": "Implement a two-pointer technique in Python to solve an array manipulation problem."
+                    }
+                ]
+            },
+            {
+                "moduleIndex": 3,
+                "title": "Advanced Two Pointer Technique",
+                "moduleObjective": "Understand how to apply the two-pointer technique to solve complex problems.",
+                "coveredConcepts": [
+                    "Advanced Two Pointer Technique",
+                    "Optimization"
+                ],
+                "excludedConcepts": [
+                    "Real-World Architecture"
+                ],
+                "lessons": [
+                    {
+                        "lessonIndex": 1,
+                        "title": "Advanced Two Pointer Technique for Array Pairs",
+                        "briefDescription": "Learn to apply the two-pointer technique to solve complex array pairs problems.",
+                        "estimatedTime": "1.5",
+                        "deliverables": "Implement an advanced two-pointer technique to solve an array pairs problem."
+                    },
+                    {
+                        "lessonIndex": 2,
+                        "title": "Advanced Two Pointer Technique for Array Subarrays",
+                        "briefDescription": "Learn to apply the two-pointer technique to solve complex array subarrays problems.",
+                        "estimatedTime": "1.5",
+                        "deliverables": "Implement an advanced two-pointer technique to solve an array subarrays problem."
+                    },
+                    {
+                        "lessonIndex": 3,
+                        "title": "Advanced Two Pointer Technique for Array Intersection",
+                        "briefDescription": "Learn to apply the two-pointer technique to solve complex array intersection problems.",
+                        "estimatedTime": "1.5",
+                        "deliverables": "Implement an advanced two-pointer technique to solve an array intersection problem."
+                    }
+                ]
+            },
+            {
+                "moduleIndex": 4,
+                "title": "Real-World Architecture",
+                "moduleObjective": "Understand how to apply the two-pointer technique in real-world scenarios.",
+                "coveredConcepts": [
+                    "Real-World Architecture"
+                ],
+                "excludedConcepts": [
+                    ""
+                ],
+                "lessons": [
+                    {
+                        "lessonIndex": 1,
+                        "title": "Applying Two Pointer Technique in Real-World Scenarios",
+                        "briefDescription": "Learn to apply the two-pointer technique in real-world scenarios.",
+                        "estimatedTime": "1.5",
+                        "deliverables": "Implement a two-pointer technique in a real-world scenario."
+                    },
+                    {
+                        "lessonIndex": 2,
+                        "title": "Optimizing Two Pointer Technique for Real-World Scenarios",
+                        "briefDescription": "Learn to optimize the two-pointer technique for real-world scenarios.",
+                        "estimatedTime": "1.5",
+                        "deliverables": "Optimize a two-pointer technique for a real-world scenario."
+                    }
+                ]
+            },
+            {
+                "moduleIndex": 5,
+                "title": "Mastering Two Pointer Technique",
+                "moduleObjective": "Master the two-pointer technique and apply it to solve complex problems.",
+                "coveredConcepts": [
+                    "Mastering Two Pointer Technique"
+                ],
+                "excludedConcepts": [
+                    ""
+                ],
+                "lessons": [
+                    {
+                        "lessonIndex": 1,
+                        "title": "Mastering Two Pointer Technique for Array Pairs",
+                        "briefDescription": "Learn to master the two-pointer technique for array pairs problems.",
+                        "estimatedTime": "1.5",
+                        "deliverables": "Master the two-pointer technique for an array pairs problem."
+                    },
+                    {
+                        "lessonIndex": 2,
+                        "title": "Mastering Two Pointer Technique for Array Subarrays",
+                        "briefDescription": "Learn to master the two-pointer technique for array subarrays problems.",
+                        "estimatedTime": "1.5",
+                        "deliverables": "Master the two-pointer technique for an array subarrays problem."
+                    }
+                ]
+            }
+        ]
+    }
+}

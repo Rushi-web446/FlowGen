@@ -9,16 +9,17 @@ const {
   getYouTubeVideosService,
 } = require("../services/course.service");
 
-// Import generation services directly
 const { generateLessonService } = require("../services/course.generate.service");
 const { getLessonPrompt } = require("../Prompts/helper.prompt");
+
+
+
 
 const saveCourseOutlineToDB = async (req, res) => {
   try {
     const outline = req.body;
     const userId = req.appUser._id;
 
-    console.log("OUTLINE RECEIVED:", JSON.stringify(outline, null, 2));
 
     const savedCourseId = await saveCourseOutlineToDBService({
       outline,
@@ -45,7 +46,6 @@ const getRecentCourses = async (req, res) => {
       courses,
     });
   } catch (error) {
-    console.error("ERROR FETCHING RECENT COURSES:", error);
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -66,7 +66,6 @@ const getCourseDetails = async (req, res) => {
       progress: result.progress,
     });
   } catch (error) {
-    console.error("ERROR FETCHING COURSE DETAILS:", error);
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -92,7 +91,6 @@ const completeLesson = async (req, res) => {
       message: result.message,
     });
   } catch (error) {
-    console.error("ERROR COMPLETING LESSON:", error);
     return res.status(400).json({
       success: false,
       message: error.message,
@@ -125,7 +123,6 @@ const getCurrentLessonContent = async (req, res) => {
       ...data,
     });
   } catch (error) {
-    console.error("ERROR FETCHING LESSON CONTENT:", error);
     return res.status(404).json({
       success: false,
       message: error.message,
@@ -170,7 +167,6 @@ const checkLessonExists = async (req, res) => {
       exists: result.exists,
     });
   } catch (error) {
-    console.error("ERROR CHECKING LESSON:", error);
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -212,7 +208,6 @@ const saveLesson = async (req, res) => {
   }
 };
 
-// Resolver Controller
 const resolveNextLesson = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -222,7 +217,6 @@ const resolveNextLesson = async (req, res) => {
       return res.status(400).json({ message: "Course ID is required" });
     }
 
-    // 1. Get Course Progress (finds the first incomplete lesson)
     const courseDetails = await getCourseDetailsWithProgressService(courseId, userId);
 
     if (!courseDetails || !courseDetails.progress) {
@@ -231,7 +225,6 @@ const resolveNextLesson = async (req, res) => {
 
     const { currentModule, currentLesson } = courseDetails.progress;
 
-    // 2. Check if lesson exists
     let lessonExistsResult = await checkLessonExistsService({
       courseId,
       userId,
@@ -239,7 +232,6 @@ const resolveNextLesson = async (req, res) => {
       lessonIndex: currentLesson,
     });
 
-    // 3. If NOT exists, GENERATE it
     if (!lessonExistsResult.exists) {
       console.log(`Generating lesson for Course: ${courseId}, Module: ${currentModule}, Lesson: ${currentLesson}`);
 
@@ -268,7 +260,6 @@ const resolveNextLesson = async (req, res) => {
       });
     }
 
-    // Return next indices
     return res.status(200).json({
       courseId,
       moduleIndex: currentModule,
@@ -281,7 +272,6 @@ const resolveNextLesson = async (req, res) => {
   }
 };
 
-// Fetch Lesson Details + Videos
 const getLessonDetails = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -292,7 +282,6 @@ const getLessonDetails = async (req, res) => {
       return res.status(400).json({ message: "Missing parameters" });
     }
 
-    // 1. Get Lesson Content
     const lessonData = await getLessonContentService({
       courseId,
       userId,
@@ -304,7 +293,6 @@ const getLessonDetails = async (req, res) => {
       return res.status(404).json({ message: "Lesson not found" });
     }
 
-    // 2. Get YouTube Videos
     const query = lessonData.lesson.videoQuery || `${lessonData.lesson.title} tutorial`;
 
     let videos = [];

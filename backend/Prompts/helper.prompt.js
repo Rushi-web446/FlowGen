@@ -6,9 +6,9 @@ const {
   getLesson,
 } = require("../repository/course.repository");
 
+
+
 const getOutlinePrompt = ({ topicName, description }) => {
-  console.log("topicName:", topicName);
-  console.log("description:", description);
 
   if (!topicName || !description) {
     throw new Error("topicName or description missing");
@@ -56,7 +56,6 @@ const getLessonPrompt = async (courseId, moduleId, lessonId) => {
 
 const getYouTubeQueryPrompt = async (courseId, moduleId, lessonId) => {
 
-  console.log(`\n\n\n\n reaching ${__filename}/getYouTubeQueryPrompt \n\n\n\n`);
 
   const course = await findById(courseId);
   if (!course) return null;

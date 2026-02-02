@@ -1,5 +1,4 @@
 import Section from "./Section";
-// src/components/lesson/LessonHeader.jsx
 const LessonHeader = ({ lesson, module }) => {
   return (
     <div style={{ marginBottom: "1.5rem" }}>

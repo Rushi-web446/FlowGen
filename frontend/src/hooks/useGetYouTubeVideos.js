@@ -27,7 +27,6 @@ const useGetYouTubeVideos = (
         setLoading(true);
         const token = await getAccessTokenSilently();
 
-        // 1️⃣ Generate YouTube query
         const queryRes = await api.post(
           "/course/generate/YTQ",
           {
@@ -42,7 +41,6 @@ const useGetYouTubeVideos = (
           }
         );
 
-        // 2️⃣ Fetch YouTube videos
         const videosRes = await api.post(
           "/course/get/utube",
           { data: queryRes.data.data },

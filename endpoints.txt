@@ -1,0 +1,447 @@
+Login : 
+http://localhost:3001/auth/login
+
+{
+    "email":"pizza@gmail.com",
+    "password":"pizza@123"
+}
+
+Signup :
+http://localhost:3001/auth/signup
+
+{
+    "name":"pizza",
+    "email":"pizza@gmail.com",
+    "password":"pizza@123"
+}
+
+
+
+Extract Topic and Description : 
+http://localhost:3001/course/extract
+
+{
+    "prompt" : "I want to learn Dynamic Programming in 30 days."
+}
+
+Generate Outline :
+http://localhost:3001/course/generate/outline
+
+{
+    "topicName": "Dynamic Programming",
+    "description": "Learn Dynamic Programming in 30 days"
+}
+
+Save Course Outline : 
+http://localhost:3001/course/save/outline
+
+{
+    "outline": {
+    "message": "course Outline Generated sucsessfully",
+    "data": {
+        "course": {
+            "title": "Mastering Dynamic Programming in 30 Days",
+            "description": "Learn Dynamic Programming in 30 days to solve complex problems efficiently and effectively. This course is designed for beginners and intermediate learners who want to improve their problem-solving skills and become proficient in Dynamic Programming. By the end of this course, you will be able to design and implement efficient algorithms to solve complex problems in various domains such as computer science, mathematics, and engineering.",
+            "courseObjective": "Design and implement efficient algorithms to solve complex problems using Dynamic Programming.",
+            "targetAudience": "Beginners and intermediate learners in computer science, mathematics, and engineering.",
+            "durationDays": 30,
+            "estimatedTotalTime": 120,
+            "skillsGained": [
+                "Problem-solving skills",
+                "Algorithm design",
+                "Efficient coding",
+                "Dynamic Programming"
+            ],
+            "assessmentPlan": "Progress will be evaluated through quizzes, assignments, and a final project."
+        },
+        "modules": [
+            {
+                "moduleIndex": 1,
+                "recommendedOrder": 1,
+                "title": "Introduction to Dynamic Programming",
+                "description": "Understand the basics of Dynamic Programming, its applications, and its benefits. Learn how to identify problems that can be solved using Dynamic Programming.",
+                "moduleObjective": "After this module you will be able to understand the basics of Dynamic Programming and its applications.",
+                "difficultyLevel": "Beginner",
+                "estimatedTime": "4-6 hours",
+                "prerequisites": [],
+                "coveredConcepts": [
+                    "Dynamic Programming",
+                    "Problem-solving",
+                    "Algorithm design"
+                ],
+                "excludedConcepts": [],
+                "learningOutcomes": [
+                    "Understand the basics of Dynamic Programming",
+                    "Identify problems that can be solved using Dynamic Programming"
+                ],
+                "topics": [
+                    "What is Dynamic Programming?",
+                    "Applications of Dynamic Programming",
+                    "Benefits of Dynamic Programming",
+                    "Identifying problems for Dynamic Programming"
+                ],
+                "lessons": [
+                    {
+                        "lessonIndex": 1,
+                        "title": "What is Dynamic Programming?",
+                        "briefDescription": "Learn the basics of Dynamic Programming and its applications.",
+                        "estimatedTime": "2 hours",
+                        "conceptDependencies": [],
+                        "deliverables": "Quiz on Dynamic Programming basics",
+                        "lessonPromptTemplate": "Generate a lesson on {{course.title}} {{module.moduleIndex}} {{lesson.title}}. Include {{module.coveredConcepts}} and exclude {{module.excludedConcepts}}. The lesson should have a title, objectives, content, and MCQs."
+                    },
+                    {
+                        "lessonIndex": 2,
+                        "title": "Applications of Dynamic Programming",
+                        "briefDescription": "Learn about the applications of Dynamic Programming in various domains.",
+                        "estimatedTime": "2 hours",
+                        "conceptDependencies": [],
+                        "deliverables": "Assignment on Dynamic Programming applications",
+                        "lessonPromptTemplate": "Generate a lesson on {{course.title}} {{module.moduleIndex}} {{lesson.title}}. Include {{module.coveredConcepts}} and exclude {{module.excludedConcepts}}. The lesson should have a title, objectives, content, and MCQs."
+                    }
+                ]
+            },
+            {
+                "moduleIndex": 2,
+                "recommendedOrder": 2,
+                "title": "Building Blocks of Dynamic Programming",
+                "description": "Learn the building blocks of Dynamic Programming, including memoization, tabulation, and recursion.",
+                "moduleObjective": "After this module you will be able to understand the building blocks of Dynamic Programming.",
+                "difficultyLevel": "Intermediate",
+                "estimatedTime": "8-12 hours",
+                "prerequisites": [
+                    "Introduction to Dynamic Programming"
+                ],
+                "coveredConcepts": [
+                    "Memoization",
+                    "Tabulation",
+                    "Recursion"
+                ],
+                "excludedConcepts": [],
+                "learningOutcomes": [
+                    "Understand memoization",
+                    "Understand tabulation",
+                    "Understand recursion"
+                ],
+                "topics": [
+                    "Memoization",
+                    "Tabulation",
+                    "Recursion",
+                    "Dynamic Programming algorithms"
+                ],
+                "lessons": [
+                    {
+                        "lessonIndex": 1,
+                        "title": "Memoization",
+                        "briefDescription": "Learn about memoization and its applications.",
+                        "estimatedTime": "4 hours",
+                        "conceptDependencies": [
+                            "Introduction to Dynamic Programming"
+                        ],
+                        "deliverables": "Quiz on memoization",
+                        "lessonPromptTemplate": "Generate a lesson on {{course.title}} {{module.moduleIndex}} {{lesson.title}}. Include {{module.coveredConcepts}} and exclude {{module.excludedConcepts}}. The lesson should have a title, objectives, content, and MCQs."
+                    },
+                    {
+                        "lessonIndex": 2,
+                        "title": "Tabulation",
+                        "briefDescription": "Learn about tabulation and its applications.",
+                        "estimatedTime": "4 hours",
+                        "conceptDependencies": [
+                            "Introduction to Dynamic Programming"
+                        ],
+                        "deliverables": "Assignment on tabulation",
+                        "lessonPromptTemplate": "Generate a lesson on {{course.title}} {{module.moduleIndex}} {{lesson.title}}. Include {{module.coveredConcepts}} and exclude {{module.excludedConcepts}}. The lesson should have a title, objectives, content, and MCQs."
+                    }
+                ]
+            },
+            {
+                "moduleIndex": 3,
+                "recommendedOrder": 3,
+                "title": "Dynamic Programming Algorithms",
+                "description": "Learn about various Dynamic Programming algorithms, including Fibonacci series, Longest Common Subsequence, and Matrix Chain Multiplication.",
+                "moduleObjective": "After this module you will be able to understand various Dynamic Programming algorithms.",
+                "difficultyLevel": "Intermediate",
+                "estimatedTime": "8-12 hours",
+                "prerequisites": [
+                    "Building Blocks of Dynamic Programming"
+                ],
+                "coveredConcepts": [
+                    "Fibonacci series",
+                    "Longest Common Subsequence",
+                    "Matrix Chain Multiplication"
+                ],
+                "excludedConcepts": [],
+                "learningOutcomes": [
+                    "Understand Fibonacci series",
+                    "Understand Longest Common Subsequence",
+                    "Understand Matrix Chain Multiplication"
+                ],
+                "topics": [
+                    "Fibonacci series",
+                    "Longest Common Subsequence",
+                    "Matrix Chain Multiplication",
+                    "Dynamic Programming applications"
+                ],
+                "lessons": [
+                    {
+                        "lessonIndex": 1,
+                        "title": "Fibonacci series",
+                        "briefDescription": "Learn about Fibonacci series and its applications.",
+                        "estimatedTime": "4 hours",
+                        "conceptDependencies": [
+                            "Building Blocks of Dynamic Programming"
+                        ],
+                        "deliverables": "Quiz on Fibonacci series",
+                        "lessonPromptTemplate": "Generate a lesson on {{course.title}} {{module.moduleIndex}} {{lesson.title}}. Include {{module.coveredConcepts}} and exclude {{module.excludedConcepts}}. The lesson should have a title, objectives, content, and MCQs."
+                    },
+                    {
+                        "lessonIndex": 2,
+                        "title": "Longest Common Subsequence",
+                        "briefDescription": "Learn about Longest Common Subsequence and its applications.",
+                        "estimatedTime": "4 hours",
+                        "conceptDependencies": [
+                            "Building Blocks of Dynamic Programming"
+                        ],
+                        "deliverables": "Assignment on Longest Common Subsequence",
+                        "lessonPromptTemplate": "Generate a lesson on {{course.title}} {{module.moduleIndex}} {{lesson.title}}. Include {{module.coveredConcepts}} and exclude {{module.excludedConcepts}}. The lesson should have a title, objectives, content, and MCQs."
+                    }
+                ]
+            },
+            {
+                "moduleIndex": 4,
+                "recommendedOrder": 4,
+                "title": "Advanced Dynamic Programming Topics",
+                "description": "Learn about advanced Dynamic Programming topics, including Knapsack problem, Shortest Path problem, and Scheduling problem.",
+                "moduleObjective": "After this module you will be able to understand advanced Dynamic Programming topics.",
+                "difficultyLevel": "Advanced",
+                "estimatedTime": "12-16 hours",
+                "prerequisites": [
+                    "Dynamic Programming Algorithms"
+                ],
+                "coveredConcepts": [
+                    "Knapsack problem",
+                    "Shortest Path problem",
+                    "Scheduling problem"
+                ],
+                "excludedConcepts": [],
+                "learningOutcomes": [
+                    "Understand Knapsack problem",
+                    "Understand Shortest Path problem",
+                    "Understand Scheduling problem"
+                ],
+                "topics": [
+                    "Knapsack problem",
+                    "Shortest Path problem",
+                    "Scheduling problem",
+                    "Advanced Dynamic Programming applications"
+                ],
+                "lessons": [
+                    {
+                        "lessonIndex": 1,
+                        "title": "Knapsack problem",
+                        "briefDescription": "Learn about Knapsack problem and its applications.",
+                        "estimatedTime": "6 hours",
+                        "conceptDependencies": [
+                            "Dynamic Programming Algorithms"
+                        ],
+                        "deliverables": "Quiz on Knapsack problem",
+                        "lessonPromptTemplate": "Generate a lesson on {{course.title}} {{module.moduleIndex}} {{lesson.title}}. Include {{module.coveredConcepts}} and exclude {{module.excludedConcepts}}. The lesson should have a title, objectives, content, and MCQs."
+                    },
+                    {
+                        "lessonIndex": 2,
+                        "title": "Shortest Path problem",
+                        "briefDescription": "Learn about Shortest Path problem and its applications.",
+                        "estimatedTime": "6 hours",
+                        "conceptDependencies": [
+                            "Dynamic Programming Algorithms"
+                        ],
+                        "deliverables": "Assignment on Shortest Path problem",
+                        "lessonPromptTemplate": "Generate a lesson on {{course.title}} {{module.moduleIndex}} {{lesson.title}}. Include {{module.coveredConcepts}} and exclude {{module.excludedConcepts}}. The lesson should have a title, objectives, content, and MCQs."
+                    }
+                ]
+            },
+            {
+                "moduleIndex": 5,
+                "recommendedOrder": 5,
+                "title": "Dynamic Programming in Real-World Applications",
+                "description": "Learn about Dynamic Programming in real-world applications, including computer networks, databases, and machine learning.",
+                "moduleObjective": "After this module you will be able to understand Dynamic Programming in real-world applications.",
+                "difficultyLevel": "Advanced",
+                "estimatedTime": "12-16 hours",
+                "prerequisites": [
+                    "Advanced Dynamic Programming Topics"
+                ],
+                "coveredConcepts": [
+                    "Computer networks",
+                    "Databases",
+                    "Machine learning"
+                ],
+                "excludedConcepts": [],
+                "learningOutcomes": [
+                    "Understand Dynamic Programming in computer networks",
+                    "Understand Dynamic Programming in databases",
+                    "Understand Dynamic Programming in machine learning"
+                ],
+                "topics": [
+                    "Computer networks",
+                    "Databases",
+                    "Machine learning",
+                    "Real-world Dynamic Programming applications"
+                ],
+                "lessons": [
+                    {
+                        "lessonIndex": 1,
+                        "title": "Computer networks",
+                        "briefDescription": "Learn about Dynamic Programming in computer networks.",
+                        "estimatedTime": "6 hours",
+                        "conceptDependencies": [
+                            "Advanced Dynamic Programming Topics"
+                        ],
+                        "deliverables": "Quiz on Dynamic Programming in computer networks",
+                        "lessonPromptTemplate": "Generate a lesson on {{course.title}} {{module.moduleIndex}} {{lesson.title}}. Include {{module.coveredConcepts}} and exclude {{module.excludedConcepts}}. The lesson should have a title, objectives, content, and MCQs."
+                    },
+                    {
+                        "lessonIndex": 2,
+                        "title": "Databases",
+                        "briefDescription": "Learn about Dynamic Programming in databases.",
+                        "estimatedTime": "6 hours",
+                        "conceptDependencies": [
+                            "Advanced Dynamic Programming Topics"
+                        ],
+                        "deliverables": "Assignment on Dynamic Programming in databases",
+                        "lessonPromptTemplate": "Generate a lesson on {{course.title}} {{module.moduleIndex}} {{lesson.title}}. Include {{module.coveredConcepts}} and exclude {{module.excludedConcepts}}. The lesson should have a title, objectives, content, and MCQs."
+                    }
+                ]
+            },
+            {
+                "moduleIndex": 6,
+                "recommendedOrder": 6,
+                "title": "Mastery and Real-World Integration",
+                "description": "Apply Dynamic Programming to real-world problems and integrate it with other programming concepts.",
+                "moduleObjective": "After this module you will be able to apply Dynamic Programming to real-world problems and integrate it with other programming concepts.",
+                "difficultyLevel": "Advanced",
+                "estimatedTime": "16-20 hours",
+                "prerequisites": [
+                    "Dynamic Programming in Real-World Applications"
+                ],
+                "coveredConcepts": [
+                    "Real-world Dynamic Programming applications",
+                    "Integration with other programming concepts"
+                ],
+                "excludedConcepts": [],
+                "learningOutcomes": [
+                    "Apply Dynamic Programming to real-world problems",
+                    "Integrate Dynamic Programming with other programming concepts"
+                ],
+                "topics": [
+                    "Real-world Dynamic Programming applications",
+                    "Integration with other programming concepts",
+                    "Mastery and real-world integration"
+                ],
+                "lessons": [
+                    {
+                        "lessonIndex": 1,
+                        "title": "Real-world Dynamic Programming applications",
+                        "briefDescription": "Apply Dynamic Programming to real-world problems.",
+                        "estimatedTime": "8 hours",
+                        "conceptDependencies": [
+                            "Dynamic Programming in Real-World Applications"
+                        ],
+                        "deliverables": "Project on Dynamic Programming in real-world applications",
+                        "lessonPromptTemplate": "Generate a lesson on {{course.title}} {{module.moduleIndex}} {{lesson.title}}. Include {{module.coveredConcepts}} and exclude {{module.excludedConcepts}}. The lesson should have a title, objectives, content, and MCQs."
+                    },
+                    {
+                        "lessonIndex": 2,
+                        "title": "Integration with other programming concepts",
+                        "briefDescription": "Integrate Dynamic Programming with other programming concepts.",
+                        "estimatedTime": "8 hours",
+                        "conceptDependencies": [
+                            "Dynamic Programming in Real-World Applications"
+                        ],
+                        "deliverables": "Assignment on integration with other programming concepts",
+                        "lessonPromptTemplate": "Generate a lesson on {{course.title}} {{module.moduleIndex}} {{lesson.title}}. Include {{module.coveredConcepts}} and exclude {{module.excludedConcepts}}. The lesson should have a title, objectives, content, and MCQs."
+                    }
+                ]
+            }
+        ],
+        "validation": {
+            "progressionValid": "YES",
+            "selfContainmentValid": "YES",
+            "timeRealismValid": "YES"
+        },
+        "notesForLessonGenerator": {
+            "maxParagraphLength": 200,
+            "mcqCount": "4-5",
+            "includeWorkedExample": true,
+            "excludeExcludedConcepts": true,
+            "useSimpleLanguage": true,
+            "provideMicroExercise": true
+        }
+    }
+},
+
+
+Save Course For User :
+http://localhost:3001/user/save/course
+
+{
+    "userId": "693817477eeb31ac53f71171",
+    "courseId":"695a97da1210cf5b5c749be4"
+}
+
+
+
+
+
+Get Recent Courses
+
+http://localhost:3001/courses/recent
+
+
+
+
+ Get Course Details With Progress
+
+http://localhost:3001/courses/details/695a97da1210cf5b5c749be4
+
+
+
+Complete Lesson
+http://localhost:3001/courses/complete/lesson/695a97da1210cf5b5c749be4
+
+Body (JSON):
+{
+  "moduleIndex": 2,
+  "lessonIndex": 3
+}
+
+Get Current Lesson Content
+
+http://localhost:3001/courses/get/lesson/695a97da1210cf5b5c749be4
+
+{
+  "moduleIndex": 3,
+  "lessonIndex": 2
+}
+
+
+
+ Check Lesson Exists
+
+http://localhost:3001/courses/check/lesson/695a97da1210cf5b5c749be4
+
+Body (JSON):
+{
+  "moduleIndex": 4,
+  "lessonIndex": 1
+}
+
+
+Lesson generate 
+http://localhost:3001/course/generate/lesson
+
+{
+    "courseId":"696289d94b24a021ab1a8086",
+    "moduleId":1,
+    "lessonId":1
+}

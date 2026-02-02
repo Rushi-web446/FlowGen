@@ -44,7 +44,6 @@ const useFetchLesson = ({ courseId, moduleIndex, lessonIndex }) => {
             break;
           }
 
-          // ⏳ lesson still generating → wait & retry
           await sleep(1000);
         }
       } catch (err) {

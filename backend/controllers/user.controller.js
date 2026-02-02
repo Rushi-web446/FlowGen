@@ -1,7 +1,6 @@
 const { saveCourseForUserService } = require("../services/user.service");
 
 const saveCourseForUser = async (req, res) => {
-  console.log("BODY:", req.body);
 
   const { courseId } = req.body;
   const userId = req.appUser._id; // ⚠️ see next section

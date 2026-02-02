@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const { addUser, findByEmail, findByAuth0Id } = require("../repository/user.repository.js");
 
 const SignupService = async ({ name, email, sub }) => {
-  console.log("\n\n\n\n  --> reaching :  backend/services/auth.service.js . \n\n\n");
   const isExist = await findByAuth0Id(sub);
 
   if (isExist) {
@@ -18,11 +17,7 @@ const SignupService = async ({ name, email, sub }) => {
   };
   newUser = await addUser(newUser);
 
-  // const token = jwt.sign(
-  //   { id: newUser._id, email: newUser.email },
-  //   process.env.JWT_SECRET,
-  //   { expiresIn: "5d" }
-  // );
+
 
   return {
     user: {
@@ -31,21 +26,13 @@ const SignupService = async ({ name, email, sub }) => {
       email: newUser.email,
       name: newUser.name,
     },
-    // token,
   };
 };
 
 const LoginService = async ({ email, sub }) => {
-  console.log("\n\n\n\n  --> reaching :  backend/services/auth.service.js . \n\n\n");
   const user = await findByAuth0Id(sub);
   if (!user) throw new Error("Invalid credential"); // think about the message I am sending
 
-
-  // const token = jwt.sign(
-  //   { id: user._id, email: user.email },
-  //   process.env.JWT_SECRET,
-  //   { expiresIn: "5d" }
-  // );
 
   return {
     user: {

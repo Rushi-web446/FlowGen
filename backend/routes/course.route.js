@@ -1,6 +1,5 @@
 const express = require("express");
 const { generateTopicAndDesciption, generateOutline, generateLesson, generateYouTubeQueryController } = require("../controllers/course.generate.controller.js");
-// const { protect } = require("../middleware/auth.js"); // Removed legacy auth
 const { saveCourseOutlineToDB, getRecentCourses, getCourseDetails,
   completeLesson,
   getCurrentLessonContent,
@@ -20,8 +19,6 @@ const syncUser = require("../middleware/user.sync.middleware");
 const router = express.Router();
 
 router.post("/extract", checkJwt, syncUser, generateTopicAndDesciption);
-// router.post("/generate/outline", checkJwt, syncUser, generateOutline);
-// router.post("/save/outline", checkJwt, syncUser, saveCourseOutlineToDB);
 
 
 router.post("/generate/outline", checkJwt, syncUser, courseQueueController);
@@ -37,7 +34,6 @@ router.get("/check/lesson/:id", checkJwt, syncUser, checkLessonExists);
 
 router.post("/generate/lesson", checkJwt, syncUser, generateLesson);
 router.post("/save/lesson", checkJwt, syncUser, saveLesson);
-// router.get("/get/lesson/:id", checkJwt, syncUser, getCurrentLessonContent);
 
 
 router.get("/get/lesson/:courseId", checkJwt, syncUser, lessonQueueController);
@@ -63,10 +59,8 @@ router.post("/complete/lesson/:id", checkJwt, syncUser, completeLesson);
 
 
 
-// Resolver Route
 router.get("/resolve/:courseId", checkJwt, syncUser, resolveNextLesson);
 
-// Combined Fetch Route (Lesson + Videos)
 router.get("/fetch/:courseId", checkJwt, syncUser, getLessonDetails);
 
 module.exports = router;

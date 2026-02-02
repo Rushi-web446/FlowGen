@@ -19,7 +19,6 @@ const syncUser = async (req, res, next) => {
 
 
 
-      console.log(`\n\n\n\n : \n\n\n  name is : ${name} \n\n email is   : ${email}  \n\n  auth0Id is  :  ${auth0Id} \n\n\n\n`);
 
 
     if (!email) {
@@ -56,7 +55,6 @@ const syncUser = async (req, res, next) => {
         .json({ message: "Duplicate email detected" });
     }
 
-    console.error("syncUser error:", error);
     return res.status(500).json({ message: "User sync failed" });
   }
 };

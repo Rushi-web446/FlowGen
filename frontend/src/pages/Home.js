@@ -45,11 +45,9 @@ const Home = () => {
       await generateCourse(prompt);
       setPrompt("");
 
-      // 🔹 First retry (most cases succeed here)
       await sleep(1500);
       setRefreshKey((k) => k + 1);
 
-      // 🔹 If still not visible, ONE more retry
       await sleep(1000);
       if (courses.length === initialCount) {
         setRefreshKey((k) => k + 1);

@@ -10,12 +10,10 @@ const addLessonToLessonQueue = async (courseId, userId) => {
     return;
   }
 
-  console.log("\n\n\n\n\n pusing into the low priority Queue \n\n\n");
 
   for (const currModule of course.modules) {
     for (const currLesson of currModule.lessons) {
 
-      // ✅ Update status to PENDING before enqueuing
       await updateLessonStatus(courseId, currModule.moduleIndex, currLesson.lessonIndex, "PENDING");
 
       await lessonQueue.add(
@@ -24,7 +22,7 @@ const addLessonToLessonQueue = async (courseId, userId) => {
           courseId: courseId.toString(),
           moduleIndex: currModule.moduleIndex,
           lessonIndex: currLesson.lessonIndex,
-          userId: userId?.toString(), // ✅ Ensure string
+          userId: userId?.toString(), // Ensure string
         },
         {
           // jobId: `lesson-${courseId.toString()}-${currModule.moduleIndex}-${currLesson.lessonIndex}`, // ❌ REMOVED to avoid collision with frontend high-priority jobs

@@ -5,8 +5,6 @@ const {
   generateYouTubeQueryService,
 } = require("../services/course.generate.service");
 
-// [NEW] Import the YouTube video service
-// const { getYouTubeVideosService } = require("../services/YouTube.service");
 
 const {
   getOutlinePrompt,
@@ -18,7 +16,6 @@ const {
 
 
 const generateTopicAndDesciption = async (req, res) => {
-  console.log("\n\n\n\n  --> reaching :  backend/controllers/course.generate.controller.js . \n\n\n");
   try {
     const prompt = await getTopicAndDesciptionExtractionPrompt(req.body);
     const data = await generateTopicAndDesciptionService({ prompt });
@@ -32,7 +29,6 @@ const generateTopicAndDesciption = async (req, res) => {
 };
 
 const generateOutline = async (req, res) => {
-  console.log("REQ BODY:", JSON.stringify(req.body, null, 2));
 
   try {
     const prompt = getOutlinePrompt(req.body);

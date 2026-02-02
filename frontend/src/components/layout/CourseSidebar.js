@@ -33,7 +33,6 @@ const CourseSidebar = ({ currentModuleIndex, currentLessonIndex }) => {
     if (loading) return <aside className="course-sidebar">Loading syllabus...</aside>;
     if (!courseData) return null;
 
-    // Calculate overall progress
     const allLessons = courseData.modules.flatMap(m => m.lessons);
     const completedLessons = allLessons.filter(l => l.isCompleted).length;
     const progressPercentage = allLessons.length > 0

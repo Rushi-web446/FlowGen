@@ -1,7 +1,6 @@
 const { SignupService, LoginService } = require("../services/auth.service");
 
 const signup = async (req, res) => {
-  console.log("\n\n\n\n  --> reaching :  backend/controllers/auth.controller.js . \n\n\n");
   try {
     const data = await SignupService(req.body);
     return res.status(201).json({
@@ -14,7 +13,6 @@ const signup = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  console.log("\n\n\n\n  --> reaching :  backend/controllers/auth.controller.js . \n\n\n");
   try {
     const data = await LoginService(req.body);
     return res.status(200).json({

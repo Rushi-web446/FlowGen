@@ -9,10 +9,8 @@ const { getYouTubeVideos } = require("../repository/YouTube.repository");
 
 
 const saveCourseOutlineToDBService = async (outline, userId) => {
-  console.log("\n\n\n\n  --> reaching :  backend/services/course.service.js/saveCourseOutlineToDBService . \n\n\n", outline, "\n\n");
 
   if (!outline?.course || !outline?.modules) {
-    console.log("\n\n\n\n comes from backend/services/course.service.js/saveCourseOutlineToDBService line no. 15 \n\n\n\n");
     throw new Error("Invalid course outline structure");
   }
 
@@ -55,14 +53,12 @@ const saveCourseOutlineToDBService = async (outline, userId) => {
 
 
 const getRecentCoursesService = async (userId) => {
-  console.log("\n\n\n\n  --> reaching :  backend/services/course.service.js . \n\n\n");
   if (!userId) {
     throw new Error("User ID is required");
   }
 
   const courses = await findRecentCoursesByUser(userId);
 
-  // Transform data for API response
   return courses.map(course => ({
     courseId: course._id,
     courseTitle: course.title,
@@ -73,7 +69,6 @@ const getRecentCoursesService = async (userId) => {
 
 
 const getCourseDetailsWithProgressService = async (courseId, userId) => {
-  console.log("\n\n\n\n  --> reaching :  backend/services/course.service.js . \n\n\n");
   if (!courseId || !userId) {
     throw new Error("Course ID and User ID are required");
   }
@@ -83,10 +78,8 @@ const getCourseDetailsWithProgressService = async (courseId, userId) => {
     throw new Error("Course not found");
   }
 
-  // Update last accessed time (fire & forget is OK here)
   updateLastAccessed(course._id);
 
-  // -------- Progress Calculation --------
 
   let currentModuleIndex = 0;
   let currentLessonIndex = 0;
@@ -190,11 +183,9 @@ const getLessonContentService = async ({
 };
 
 const getYouTubeVideosService = async (query) => {
-  console.log("\n\n\n\n  --> reaching :  backend/services/YouTube.service.js . \n\n\n");
   try {
     return await getYouTubeVideos(query);
   } catch (error) {
-    // Throw the original error so we know what happened
     throw error;
   }
 };
@@ -229,7 +220,6 @@ const saveLessonService = async (
   let actualLessonIndex = lessonIndex;
   let actualLesson = lesson;
 
-  // Handle object-based arguments (used in some controllers)
   if (typeof courseIdOrObj === "object" && !courseIdOrObj._bsontype && courseIdOrObj.courseId) {
     courseId = courseIdOrObj.courseId;
     actualModuleIndex = courseIdOrObj.moduleIndex;
@@ -237,16 +227,12 @@ const saveLessonService = async (
     actualLesson = courseIdOrObj.lesson;
   }
 
-  console.log(
-    "\n\n\n\n  --> reaching : backend/services/course.service.js/saveLessonService \n\n\n",
-    { courseId, moduleIndex: actualModuleIndex, lessonIndex: actualLessonIndex }
-  );
+
 
   if (!courseId || actualModuleIndex == null || actualLessonIndex == null) {
     throw new Error("Missing required parameters for saving lesson");
   }
 
-  // Normalize lesson payload
   let lessonPayload = {};
 
   if (actualLesson && actualLesson.data) {
@@ -257,7 +243,6 @@ const saveLessonService = async (
     lessonPayload.content = actualLesson;
   }
 
-  console.log("🟡 Lesson payload normalized");
 
   const savedLesson = await saveLesson(
     courseId,
@@ -270,7 +255,6 @@ const saveLessonService = async (
     throw new Error("Failed to save lesson (Course/Module/Lesson not found)");
   }
 
-  console.log("🟢 Lesson successfully saved in DB");
 
   return savedLesson;
 };

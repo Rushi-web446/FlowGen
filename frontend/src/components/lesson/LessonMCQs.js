@@ -1,7 +1,6 @@
 import Section from "./Section";
 import { useState } from "react";
 
-// components/lesson/LessonMCQs.jsx
 const LessonMCQs = ({ mcqs }) => {
   if (!mcqs || mcqs.length === 0) return null;
 
@@ -14,7 +13,6 @@ const LessonMCQs = ({ mcqs }) => {
   );
 };
 
-// Internal component for handling individual MCQ state
 const MCQItem = ({ index, question }) => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showResult, setShowResult] = useState(false);

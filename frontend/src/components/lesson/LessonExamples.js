@@ -1,5 +1,4 @@
 import Section from "./Section";
-// components/lesson/LessonExamples.jsx
 const LessonExamples = ({ examples }) => {
   if (!examples || examples.length === 0) return null;
 

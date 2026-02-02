@@ -2,7 +2,7 @@ const { Redis } = require("ioredis");
 
 const redisConnection = new Redis(process.env.REDIS_URL, {
   tls: {},
-  family: 4,                  // 🔥 FORCE IPv4
+  family: 4,                  // FORCE IPv4 only.
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
   reconnectOnError: () => true,
