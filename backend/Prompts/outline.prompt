@@ -71,7 +71,7 @@ MANDATORY JSON SCHEMA (FOLLOW EXACTLY):
           "lessonObjective": "string"
         }
       ]
-    }
+    } 
   ]
 }
 

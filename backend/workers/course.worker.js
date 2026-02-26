@@ -1,8 +1,9 @@
 require("dotenv").config();
 const connectDB = require("../config/db");
 
-// 🔴 CONNECT DB BEFORE WORKER STARTS
+// since this will not trigger through server.js file so we have to make sure write first hear
 connectDB();
+
 
 setInterval(() => {
   redisConnection.ping();
@@ -16,22 +17,19 @@ const { generateOutlineService } = require("../services/course.generate.service"
 const { saveCourseOutlineToDBService } = require("../services/course.service");
 const { addLessonToLessonQueue } = require("../utils/helper");
 
+
+
+
 const courseWorker = new Worker(
   "COURSE_QUEUE",
   async (job) => {
     const { prompt, userId } = job.data;
 
 
-
     const generatedOutline = await generateOutlineService({ prompt });
 
-
-
+    
     const courseId = await saveCourseOutlineToDBService(generatedOutline, userId);
-
-
-
-
 
     await addLessonToLessonQueue(courseId, userId);
 
@@ -42,6 +40,7 @@ const courseWorker = new Worker(
     concurrency: 2,
   }
 );
+
 
 
 

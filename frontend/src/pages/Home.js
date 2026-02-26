@@ -1,13 +1,19 @@
-
 import { useAuth0 } from "@auth0/auth0-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuthSync } from "../hooks/useAuthSync";
 import { useRecentCourses } from "../hooks/useRecentCourses";
 import { useCourseGeneration } from "../hooks/useCourseGeneration";
+import { useJobProgress } from "../hooks/useJobProgress";
+import HomeSidebar from "../components/layout/HomeSidebar";
+import ProfessionalFooter from "../components/layout/ProfessionalFooter";
+import CourseGenerationProgress from "../components/CourseGenerationProgress";
+import NewCourseCard from "../components/NewCourseCard";
+import "./Home.css";
 
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+
 
 const Home = () => {
   const navigate = useNavigate();
@@ -16,6 +22,9 @@ const Home = () => {
   const [prompt, setPrompt] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const [waiting, setWaiting] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [previousCourses, setPreviousCourses] = useState([]);
+  const [newCourseData, setNewCourseData] = useState(null);
 
   const userReady = useAuthSync(isAuthenticated, getAccessTokenSilently, user);
 
@@ -30,6 +39,12 @@ const Home = () => {
     getAccessTokenSilently
   );
 
+  const { newCourse, progressState, isPolling, startPolling, resetProgress } =
+    useJobProgress(getAccessTokenSilently);
+
+
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -39,83 +54,137 @@ const Home = () => {
     }
 
     try {
-      const initialCount = courses.length;
+      setPreviousCourses([...courses]);
+      setNewCourseData(null);
+      resetProgress();
+
       setWaiting(true);
 
       await generateCourse(prompt);
       setPrompt("");
 
-      await sleep(1500);
-      setRefreshKey((k) => k + 1);
-
-      await sleep(1000);
-      if (courses.length === initialCount) {
-        setRefreshKey((k) => k + 1);
-      }
+      startPolling([...courses]);
     } catch (err) {
-      console.warn("Course generation failed");
-    } finally {
+      console.warn("Course generation failed:", err);
       setWaiting(false);
     }
   };
 
+  useEffect(() => {
+    if (newCourse) {
+      setNewCourseData(newCourse);
+      setWaiting(false);
+    }
+  }, [newCourse]);
+
   return (
-    <div style={{ padding: "2rem", maxWidth: "700px", margin: "auto" }}>
-      <h1>Welcome {user?.name}</h1>
+    <>
+      <HomeSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        recentCourses={courses}
+        loading={coursesLoading}
+      />
 
-      <button
-        onClick={() =>
-          logout({ logoutParams: { returnTo: window.location.origin } })
-        }
-      >
-        Logout
-      </button>
-
-      <hr />
-
-      <form onSubmit={handleSubmit}>
-        <textarea
-          rows="4"
-          placeholder="Describe what you want to learn..."
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          style={{ width: "100%", padding: "10px" }}
-        />
-
+      <div className="home-container">
         <button
-          disabled={loading || waiting}
-          style={{ marginTop: "10px" }}
+          className="open-sidebar-btn"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Open menu"
         >
-          {loading || waiting ? "Creating..." : "Submit"}
+          ☰
         </button>
-      </form>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {waiting && <p>Finalizing your course…</p>}
-
-      <hr />
-
-      <h3>My Courses</h3>
-
-      {coursesLoading && <p>Loading courses...</p>}
-      {!coursesLoading && courses.length === 0 && <p>No courses yet</p>}
-
-      {courses.map((course) => (
-        <div
-          key={course.courseId}
-          style={{
-            border: "1px solid #ddd",
-            padding: "12px",
-            marginBottom: "10px",
-            cursor: "pointer",
-          }}
-          onClick={() => navigate(`/course/${course.courseId}/module/1/lesson/1`)}
-        >
-          <h4>{course.courseTitle}</h4>
-          <p>{course.courseDescription}</p>
+        <div className="home-header">
+          <h1 className="welcome-title">Welcome back, {user?.name}!</h1>
+          <p className="welcome-subtitle">Create your next learning journey</p>
         </div>
-      ))}
-    </div>
+
+        <div className="course-generation-section">
+          <h2 className="section-title">Create New Course</h2>
+          
+          <form onSubmit={handleSubmit} className="course-form">
+            <textarea
+              className="course-textarea"
+              placeholder="Describe what you want to learn... (at least 5 words)"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              disabled={isPolling || waiting}
+            />
+
+            <button
+              type="submit"
+              className="submit-btn"
+              disabled={loading || waiting || isPolling}
+            >
+              {isPolling
+                ? "Generating Course..."
+                : loading || waiting
+                ? "Creating..."
+                : "Generate Course"}
+            </button>
+          </form>
+
+          {error && (
+            <div className="error-message">
+              ⚠️ {error}
+            </div>
+          )}
+          
+          {isPolling && (
+            <CourseGenerationProgress progressState={progressState} />
+          )}
+        </div>
+
+        {/* My Courses Section */}
+        <div className="my-courses-section">
+          <h2 className="section-title">My Courses</h2>
+
+          {coursesLoading && !newCourseData && (
+            <div className="loading-state">
+              <div className="skeleton-loader"></div>
+              <div className="skeleton-loader"></div>
+              <div className="skeleton-loader"></div>
+            </div>
+          )}
+
+          {!coursesLoading && courses.length === 0 && !newCourseData && (
+            <div className="empty-state">
+              <div className="empty-state-icon">📚</div>
+              <p className="empty-state-text">No courses yet. Create your first course above!</p>
+            </div>
+          )}
+
+          {(courses.length > 0 || newCourseData) && (
+            <div className="courses-grid">
+              {newCourseData && (
+                <NewCourseCard
+                  course={newCourseData}
+                  onNavigate={(course) =>
+                    navigate(
+                      `/course/${course.courseId}/module/1/lesson/1`
+                    )
+                  }
+                />
+              )}
+
+              {courses.map((course) => (
+                <div
+                  key={course.courseId}
+                  className="course-card"
+                  onClick={() => navigate(`/course/${course.courseId}/module/1/lesson/1`)}
+                >
+                  <h3 className="course-card-title">{course.courseTitle}</h3>
+                  <p className="course-card-description">{course.courseDescription}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <ProfessionalFooter />
+    </>
   );
 };
 

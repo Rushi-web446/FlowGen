@@ -1,0 +1,113 @@
+/* Success Toast Notification */
+.success-toast {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.95), rgba(16, 185, 129, 0.95));
+  border: 1px solid rgba(34, 197, 94, 0.5);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(34, 197, 94, 0.3);
+  padding: 1rem 1.5rem;
+  z-index: 100;
+  animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.success-toast-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 250px;
+}
+
+.success-toast-icon {
+  font-size: 1.5rem;
+  animation: bounceCheckmark 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes bounceCheckmark {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.success-toast-message {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f0fdf4;
+  letter-spacing: 0.3px;
+}
+
+.success-toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #4ade80, #dcfce7);
+  animation: progressFill 4s linear forwards;
+}
+
+@keyframes progressFill {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+@media (max-width: 768px) {
+  .success-toast {
+    top: 1.5rem;
+    right: 1.5rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .success-toast-content {
+    min-width: auto;
+  }
+
+  .success-toast-icon {
+    font-size: 1.25rem;
+  }
+
+  .success-toast-message {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .success-toast {
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .success-toast-content {
+    width: 100%;
+  }
+
+  .success-toast-message {
+    font-size: 0.85rem;
+  }
+}

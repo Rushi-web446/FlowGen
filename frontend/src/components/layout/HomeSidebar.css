@@ -1,0 +1,213 @@
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.home-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 280px;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.03);
+  border-right: 1px solid var(--surface-border, #333);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-xl, 1.5rem) var(--space-md, 1rem);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+.home-sidebar.open {
+  animation: slideIn 0.3s ease-in-out forwards;
+}
+
+.home-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xl, 1.5rem);
+  padding-bottom: var(--space-md, 1rem);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.home-sidebar-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main, #fff);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-muted, #999);
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md, 6px);
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main, #fff);
+}
+
+.home-sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: var(--space-md, 1rem);
+}
+
+/* Scrollbar styling */
+.home-sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.home-sidebar-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.home-sidebar-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.home-sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-section {
+  margin-bottom: var(--space-xl, 1.5rem);
+}
+
+.section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted, #999);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 var(--space-md, 1rem) 0;
+}
+
+.loading-text,
+.empty-text {
+  color: var(--text-muted, #999);
+  font-size: 0.9rem;
+  padding: var(--space-md, 1rem);
+}
+
+.courses-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm, 0.5rem);
+}
+
+.course-item {
+  padding: var(--space-md, 1rem);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md, 6px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.course-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(4px);
+}
+
+.course-item h4 {
+  margin: 0 0 var(--space-xs, 0.3rem) 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main, #fff);
+}
+
+.course-item p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted, #999);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.home-sidebar-footer {
+  padding-top: var(--space-md, 1rem);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logout-btn {
+  width: 100%;
+  padding: var(--space-md, 1rem);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  border-radius: var(--radius-md, 6px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.logout-btn:active {
+  transform: scale(0.98);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .home-sidebar {
+    width: 100%;
+    max-width: 280px;
+  }
+}

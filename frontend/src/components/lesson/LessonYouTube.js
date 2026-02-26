@@ -29,7 +29,6 @@ const LessonYouTube = ({ videos }) => {
               transition: "transform 0.2s ease",
             }}
           >
-            {/* Video */}
             <iframe
               src={video.embedUrl}
               title={video.title}
@@ -42,7 +41,6 @@ const LessonYouTube = ({ videos }) => {
               }}
             />
 
-            {/* Meta */}
             <div style={{ padding: "1rem" }}>
               <h4
                 style={{

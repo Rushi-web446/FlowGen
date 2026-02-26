@@ -1,5 +1,3 @@
-// const { auth } = require('express-oauth2-jwt-bearer');
-// require('dotenv').config();
 
 
 const { expressjwt: jwt } = require("express-jwt");

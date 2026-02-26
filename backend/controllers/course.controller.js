@@ -15,6 +15,8 @@ const { getLessonPrompt } = require("../Prompts/helper.prompt");
 
 
 
+
+
 const saveCourseOutlineToDB = async (req, res) => {
   try {
     const outline = req.body;
@@ -37,6 +39,9 @@ const saveCourseOutlineToDB = async (req, res) => {
   }
 };
 
+
+
+
 const getRecentCourses = async (req, res) => {
   try {
     const userId = req.appUser._id;
@@ -52,6 +57,9 @@ const getRecentCourses = async (req, res) => {
     });
   }
 };
+
+
+
 
 const getCourseDetails = async (req, res) => {
   try {
@@ -72,6 +80,9 @@ const getCourseDetails = async (req, res) => {
     });
   }
 };
+
+
+
 
 const completeLesson = async (req, res) => {
   try {
@@ -97,6 +108,8 @@ const completeLesson = async (req, res) => {
     });
   }
 };
+
+
 
 const getCurrentLessonContent = async (req, res) => {
   try {
@@ -129,6 +142,9 @@ const getCurrentLessonContent = async (req, res) => {
     });
   }
 };
+
+
+
 
 const getYouTubeVideos = async (req, res) => {
   try {
@@ -174,6 +190,9 @@ const checkLessonExists = async (req, res) => {
   }
 };
 
+
+
+
 const saveLesson = async (req, res) => {
   try {
     const { courseId, moduleIndex, lessonIndex, lesson } = req.body;
@@ -207,6 +226,9 @@ const saveLesson = async (req, res) => {
     });
   }
 };
+
+
+
 
 const resolveNextLesson = async (req, res) => {
   try {
@@ -272,6 +294,10 @@ const resolveNextLesson = async (req, res) => {
   }
 };
 
+
+
+
+
 const getLessonDetails = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -312,6 +338,9 @@ const getLessonDetails = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+
+
 
 module.exports = {
   saveCourseOutlineToDB,

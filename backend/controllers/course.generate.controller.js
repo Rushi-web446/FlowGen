@@ -15,6 +15,8 @@ const {
 
 
 
+
+
 const generateTopicAndDesciption = async (req, res) => {
   try {
     const prompt = await getTopicAndDesciptionExtractionPrompt(req.body);
@@ -27,6 +29,10 @@ const generateTopicAndDesciption = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+
+
+
 
 const generateOutline = async (req, res) => {
 
@@ -43,6 +49,8 @@ const generateOutline = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+
 
 
 const generateLesson = async (req, res) => {
@@ -80,6 +88,8 @@ const generateLesson = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+
 
 const generateYouTubeQueryController = async (req, res) => {
   try {

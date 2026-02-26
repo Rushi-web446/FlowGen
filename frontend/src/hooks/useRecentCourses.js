@@ -37,7 +37,7 @@ export const useRecentCourses = (
     isAuthenticated,
     userReady,
     getAccessTokenSilently,
-    refreshKey // ✅ THIS IS THE KEY FIX
+    refreshKey 
   ]);
 
   return { courses, loading };

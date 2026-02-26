@@ -81,4 +81,11 @@ const getTopicAndDesciptionExtractionPrompt = async ({ prompt }) => {
 
 }
 
-module.exports = { getOutlinePrompt, getLessonPrompt, getTopicAndDesciptionExtractionPrompt, getYouTubeQueryPrompt };
+const getHinglishPrompt = (lessonContent) => {
+  const filePath = path.join(__dirname, "./hinglish.prompt");
+  const promptTemplate = fs.readFileSync(filePath, "utf-8");
+
+  return promptTemplate.replaceAll("{{lessonContent}}", lessonContent);
+};
+
+module.exports = { getOutlinePrompt, getLessonPrompt, getTopicAndDesciptionExtractionPrompt, getYouTubeQueryPrompt, getHinglishPrompt };

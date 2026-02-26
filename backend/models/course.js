@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
- // Lesson Schema
+// Lesson Schema
+// I will make change while updating the DB logic. 
 const lessonSchema = new mongoose.Schema(
   {
     lessonIndex: { type: Number, required: true },
@@ -12,6 +13,10 @@ const lessonSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       default: null,
     },
+    hinglishContent: {
+      type: String,
+      default: "",
+    },
     isGenerated: {
       type: String,
       enum: ["", "PENDING", "GENERATING", "GENERATED", "FAILED"],
@@ -22,6 +27,7 @@ const lessonSchema = new mongoose.Schema(
   },
   { _id: true }
 );
+
 
 // Module Schema 
 const moduleSchema = new mongoose.Schema(
@@ -41,7 +47,7 @@ const moduleSchema = new mongoose.Schema(
   { _id: true }
 );
 
- // Course Schema
+// Course Schema
 const courseSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },

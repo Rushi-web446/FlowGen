@@ -36,6 +36,7 @@ const { saveLessonService } = require("../services/course.service");
 
 
 
+
 const lessonWorker = new Worker(
   "LESSON_QUEUE",
   async (job) => {
@@ -82,9 +83,7 @@ const lessonWorker = new Worker(
     );
 
 
-
-
-
+    
 
     return { success: true };
   },
@@ -94,14 +93,6 @@ const lessonWorker = new Worker(
     lockDuration: 5 * 60 * 1000, // 5 minutes
   },
 );
-
-
-
-
-
-
-
-
 
 
 

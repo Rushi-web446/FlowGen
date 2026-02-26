@@ -18,7 +18,6 @@ const SignupService = async ({ name, email, sub }) => {
   newUser = await addUser(newUser);
 
 
-
   return {
     user: {
       id: newUser._id,
@@ -28,6 +27,10 @@ const SignupService = async ({ name, email, sub }) => {
     },
   };
 };
+
+
+
+
 
 const LoginService = async ({ email, sub }) => {
   const user = await findByAuth0Id(sub);

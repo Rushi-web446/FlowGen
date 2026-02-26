@@ -1,6 +1,10 @@
 const User = require("../models/user");
 
 const syncUser = async (req, res, next) => {
+
+
+
+    
   try {
     if (!req.auth || !req.auth.sub) {
       return res.status(401).json({ message: "Unauthorized" });

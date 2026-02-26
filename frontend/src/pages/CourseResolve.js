@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import api from "../api/axios";
+import LessonTransition from "../components/lesson/LessonTransition";
 
 const CourseResolver = () => {
 
@@ -32,7 +33,6 @@ const CourseResolver = () => {
           { replace: true }
         );
       } catch (err) {
-        // optional: redirect home or error page
         navigate("/home", { replace: true });
       }
     };
@@ -40,8 +40,7 @@ const CourseResolver = () => {
     resolveCourse();
   }, [courseId, isAuthenticated, getAccessTokenSilently, navigate]);
 
-  // Resolver has no UI responsibility
-  return <h2>Preparing your lesson…</h2>;
+  return <LessonTransition />;
 };
 
 export default CourseResolver;

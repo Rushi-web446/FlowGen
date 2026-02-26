@@ -1,7 +1,6 @@
 import React, { forwardRef } from "react";
 
 const LessonPDF = forwardRef(({ course, lesson, youtubeVideos }, ref) => {
-  // ✅ HARD GUARD — prevents crash
   if (!lesson) return null;
 
   return (
@@ -13,7 +12,6 @@ const LessonPDF = forwardRef(({ course, lesson, youtubeVideos }, ref) => {
         color: "#111",
       }}
     >
-      {/* COURSE HEADER */}
       <h1 style={{ textAlign: "center" }}>{course?.title}</h1>
       <p style={{ textAlign: "center", marginBottom: "30px" }}>
         {course?.description}
@@ -21,10 +19,8 @@ const LessonPDF = forwardRef(({ course, lesson, youtubeVideos }, ref) => {
 
       <hr />
 
-      {/* LESSON HEADER */}
       <h2>{lesson.title}</h2>
 
-      {/* INTRODUCTION */}
       {lesson.introduction && (
         <>
           <h3>Introduction</h3>
@@ -32,7 +28,6 @@ const LessonPDF = forwardRef(({ course, lesson, youtubeVideos }, ref) => {
         </>
       )}
 
-      {/* MAIN POINTS */}
       {lesson.mainPoints?.length > 0 && (
         <>
           <h3>Core Concepts</h3>
@@ -45,7 +40,6 @@ const LessonPDF = forwardRef(({ course, lesson, youtubeVideos }, ref) => {
         </>
       )}
 
-      {/* EXAMPLES */}
       {lesson.examples?.length > 0 && (
         <>
           <h3>Examples</h3>
@@ -58,7 +52,6 @@ const LessonPDF = forwardRef(({ course, lesson, youtubeVideos }, ref) => {
         </>
       )}
 
-      {/* MCQs WITH ANSWERS */}
       {lesson.mcqs?.length > 0 && (
         <>
           <h3>Quiz (With Answers)</h3>
@@ -88,7 +81,6 @@ const LessonPDF = forwardRef(({ course, lesson, youtubeVideos }, ref) => {
         </>
       )}
 
-      {/* YOUTUBE LINKS */}
       {youtubeVideos?.length > 0 && (
         <>
           <h3>Video Resources</h3>

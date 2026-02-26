@@ -4,6 +4,9 @@ const findById = async (courseId) => {
   return Course.findById(courseId);
 };
 
+
+
+
 const getModule = async (courseId, moduleIndex) => {
   const course = await Course.findById(courseId);
   if (!course) return null;
@@ -12,6 +15,8 @@ const getModule = async (courseId, moduleIndex) => {
     (m) => m.moduleIndex === Number(moduleIndex)
   );
 };
+
+
 
 
 const getLesson = async (courseId, moduleIndex, lessonIndex) => {
@@ -29,6 +34,9 @@ const getLesson = async (courseId, moduleIndex, lessonIndex) => {
 
   return lesson;
 };
+
+
+
 
 const updateLessonStatus = async (
   courseId,
@@ -61,6 +69,8 @@ module.exports = {
 
 
 
+
+
 const saveCourseOutlineToDB = async (course) => {
   const newCourse = await Course.create(course);
 
@@ -68,12 +78,17 @@ const saveCourseOutlineToDB = async (course) => {
 }
 
 
-const findRecentCoursesByUser = async (userId, limit = 10) => {
+
+
+const findRecentCoursesByUser = async (userId, limit = 3) => {
   return await Course.find({ userId })
     .sort({ lastAccessedAt: -1 })
     .limit(limit)
     .select("title description lastAccessedAt");
 };
+
+
+
 
 
 const updateLastAccessed = async (courseId) => {
@@ -82,6 +97,9 @@ const updateLastAccessed = async (courseId) => {
     { $set: { lastAccessedAt: new Date() } }
   );
 };
+
+
+
 
 
 
@@ -118,6 +136,9 @@ const markLessonCompleted = async ({
 };
 
 
+
+
+
 const findLessonForUser = async ({
   courseId,
   userId,
@@ -144,6 +165,10 @@ const findLessonForUser = async ({
   };
 };
 
+
+
+
+
 const checkLessonExistsForUser = async ({
   courseId,
   userId,
@@ -162,6 +187,8 @@ const checkLessonExistsForUser = async ({
 
   return Boolean(course.content);
 };
+
+
 
 
 const saveLesson = async (
@@ -193,6 +220,7 @@ const saveLesson = async (
 
   return lesson;
 };
+
 
 
 

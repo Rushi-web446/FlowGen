@@ -4,10 +4,9 @@ const groq = new Grok({
   apiKey: process.env.GROQ_API_KEY,
 });
 
+
+
 const generateJsonFromLLM = async ({ prompt, maxTokens }) => {
-
-
-
   const response = await groq.chat.completions.create({
     model: "llama-3.1-8b-instant",
     messages: [
@@ -19,11 +18,11 @@ const generateJsonFromLLM = async ({ prompt, maxTokens }) => {
     response_format: { type: "json_object" },
   });
 
+
   const raw = response?.choices?.[0]?.message?.content;
   if (!raw) {
     throw new Error("Empty response from LLM");
   }
-
 
   try {
     return JSON.parse(raw.trim());
@@ -34,14 +33,44 @@ const generateJsonFromLLM = async ({ prompt, maxTokens }) => {
 };
 
 
-const generateTopicAndDesciptionService = async ({ prompt }) => {
 
+
+
+const generateTextFromLLM = async ({ prompt, maxTokens }) => {
+  const response = await groq.chat.completions.create({
+    model: "llama-3.1-8b-instant",
+    messages: [
+      { role: "system", content: "You are a helpful assistant and a translator." },
+      { role: "user", content: prompt }
+    ],
+    temperature: 0.5,
+    max_tokens: maxTokens,
+  });
+
+  const raw = response?.choices?.[0]?.message?.content;
+  if (!raw) {
+    throw new Error("Empty response from LLM");
+  }
+
+  return raw.trim();
+};
+
+
+
+
+
+
+const generateTopicAndDesciptionService = async ({ prompt }) => {
   return generateJsonFromLLM({ prompt, maxTokens: 1000 });
 };
+
+
+
 
 const generateOutlineService = async ({ prompt }) => {
   return generateJsonFromLLM({ prompt, maxTokens: 5000 });
 };
+
 
 
 const generateLessonService = async (prompt) => {
@@ -49,12 +78,23 @@ const generateLessonService = async (prompt) => {
 };
 
 
+
 const generateYouTubeQueryService = async (prompt) => {
-
-
-
   return generateJsonFromLLM({ prompt, maxTokens: 3000 });
 };
 
 
-module.exports = { generateOutlineService, generateLessonService, generateTopicAndDesciptionService, generateYouTubeQueryService };
+
+const generateHinglishService = async (prompt) => {
+  return generateTextFromLLM({ prompt, maxTokens: 4000 });
+};
+
+
+
+module.exports = {
+  generateOutlineService,
+  generateLessonService,
+  generateTopicAndDesciptionService,
+  generateYouTubeQueryService,
+  generateHinglishService
+};

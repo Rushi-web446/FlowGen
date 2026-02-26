@@ -49,23 +49,14 @@ const useCourseDetails = (
   const goToNextLesson = () => {
     if (!course) return;
 
-    // Current module
     const currentModule = course.modules[currentModuleIndex];
 
-    // Check if next lesson exists in current module
-    // Note: AI generated content might vary, assuming 'topics' or 'lessons' array exists in module
-    // Based on previous context, modules likely have lessons or topics. 
-    // Let's inspect the structure if needed, but for now specific generic length check.
-    // Actually, checking standard structure: modules array.
-
-    // Check for topics or lessons to be robust
     const lessons = currentModule.topics || currentModule.lessons || [];
     const totalLessonsInModule = lessons.length;
 
     if (currentLessonIndex < totalLessonsInModule - 1) {
       setCurrentLessonIndex((prev) => prev + 1);
     } else {
-      // Check for next module
       if (currentModuleIndex < course.modules.length - 1) {
         setCurrentModuleIndex((prev) => prev + 1);
         setCurrentLessonIndex(0);

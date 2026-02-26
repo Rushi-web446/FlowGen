@@ -34,6 +34,8 @@ const courseQueueController = async (req, res) => {
 
 
 
+
+
 const lessonQueueController = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -49,7 +51,7 @@ const lessonQueueController = async (req, res) => {
 
       return res.json({
         status: "READY",
-        lesson: lesson.content, // 👈 actual lesson data
+        lesson: lesson.content, // actual lesson data
         youtubeVideos: lesson.youtubeVideos || [],
       });
     }
@@ -71,8 +73,7 @@ const lessonQueueController = async (req, res) => {
         priority: 1,
       },
     );
-
-
+    
     return res.status(202).json({
       status: "GENERATING",
     });

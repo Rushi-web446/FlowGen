@@ -10,7 +10,7 @@ const { saveCourseOutlineToDB, getRecentCourses, getCourseDetails,
   getLessonDetails,
 } = require("../controllers/course.controller.js");
 
-const {courseQueueController, lessonQueueController} = require("../controllers/queue.controller.js");
+const { courseQueueController, lessonQueueController } = require("../controllers/queue.controller.js");
 
 const checkJwt = require("../middleware/auth.middleware");
 const syncUser = require("../middleware/user.sync.middleware");
@@ -27,8 +27,10 @@ router.post("/save/outline", checkJwt, syncUser, saveCourseOutlineToDB);
 
 
 
-router.get("/recent", checkJwt, syncUser, getRecentCourses);
-router.get("/details/:id", checkJwt, syncUser, getCourseDetails); // get current (module, lesson)
+router.get("/recent", checkJwt, syncUser, getRecentCourses); // users top 3 recent access course 
+
+
+router.get("/details/:id", checkJwt, syncUser, getCourseDetails); 
 router.get("/check/lesson/:id", checkJwt, syncUser, checkLessonExists);
 
 
@@ -38,8 +40,6 @@ router.post("/save/lesson", checkJwt, syncUser, saveLesson);
 
 router.get("/get/lesson/:courseId", checkJwt, syncUser, lessonQueueController);
 
-
-                                                                                                      
 
 
 
@@ -62,5 +62,7 @@ router.post("/complete/lesson/:id", checkJwt, syncUser, completeLesson);
 router.get("/resolve/:courseId", checkJwt, syncUser, resolveNextLesson);
 
 router.get("/fetch/:courseId", checkJwt, syncUser, getLessonDetails);
+
+router.get("/lesson/explain/:courseId", checkJwt, syncUser, getLessonDetails); 
 
 module.exports = router;

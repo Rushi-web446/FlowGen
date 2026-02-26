@@ -1,6 +1,11 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 
+
+// this is the standard approach for checking the auth will take care and see 
+
+
+
 const protect = async (req, res, next) => {
   let token;
 

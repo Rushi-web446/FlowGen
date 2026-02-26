@@ -1,5 +1,6 @@
 // components/lesson/LessonNavigation.jsx
 import { useState } from "react";
+import "./LessonNavigation.css";
 
 const LessonNavigation = () => {
     const [activeSection, setActiveSection] = useState("");

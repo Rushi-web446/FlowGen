@@ -22,10 +22,9 @@ const addLessonToLessonQueue = async (courseId, userId) => {
           courseId: courseId.toString(),
           moduleIndex: currModule.moduleIndex,
           lessonIndex: currLesson.lessonIndex,
-          userId: userId?.toString(), // Ensure string
+          userId: userId?.toString(), 
         },
         {
-          // jobId: `lesson-${courseId.toString()}-${currModule.moduleIndex}-${currLesson.lessonIndex}`, // ❌ REMOVED to avoid collision with frontend high-priority jobs
           priority: 5,
           attempts: 3,
           backoff: {

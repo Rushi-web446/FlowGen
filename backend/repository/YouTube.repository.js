@@ -2,6 +2,8 @@ const axios = require("axios");
 
 const getYouTubeVideos = async (query) => {
     try {
+
+        // this will first find the 20-25 videos releted to the query string
         const searchRes = await axios.get(
             `${process.env.BASE_URL}/search`,
             {
@@ -24,6 +26,7 @@ const getYouTubeVideos = async (query) => {
 
         if (!searchRes.data?.items?.length) return [];
 
+
         const videoIds = searchRes.data.items
             .map(v => v.id.videoId)
             .filter(Boolean)
@@ -39,6 +42,9 @@ const getYouTubeVideos = async (query) => {
                 }
             }
         );
+
+
+        // Fetching top 3-4 based on the views and statistics
 
         const keywords = query
             .toLowerCase()
