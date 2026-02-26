@@ -12,21 +12,22 @@ import CourseGenerationProgress from "../components/CourseGenerationProgress";
 import NewCourseCard from "../components/NewCourseCard";
 import "./Home.css";
 
-const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
 
 const Home = () => {
   const navigate = useNavigate();
-  const { user, logout, isAuthenticated, getAccessTokenSilently } = useAuth0();
+  const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
 
   const [prompt, setPrompt] = useState("");
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshKey] = useState(0);
   const [waiting, setWaiting] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [previousCourses, setPreviousCourses] = useState([]);
   const [newCourseData, setNewCourseData] = useState(null);
 
   const userReady = useAuthSync(isAuthenticated, getAccessTokenSilently, user);
+
+  console.log(previousCourses);
 
   const { courses, loading: coursesLoading } = useRecentCourses(
     isAuthenticated,
