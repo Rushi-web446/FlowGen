@@ -12,7 +12,7 @@ https://flow-767zwwbg2-rushis-projects-f751d98e.vercel.app/home
 
 
 <p align="center">
-  <img src="./flowgen-architecture.jpeg" width="800"/>
+  <img src="  <img src="https://github.com/Rushi-web446/FlowGen/blob/main/FlowGen%20Screen.jpeg" width="800"/>" width="800"/>
 </p>
 
 
