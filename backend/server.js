@@ -9,6 +9,11 @@ const syncUser = require('./middleware/user.sync.middleware');
 const userRoutes = require("./routes/user.route");
 const coursesRoute = require("./routes/course.route");
 
+// Start Workers
+require("./workers/course.worker");
+require("./workers/lesson.worker");
+
+
 const app = express();
 
 app.use(cors());
