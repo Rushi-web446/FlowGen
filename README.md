@@ -3,7 +3,7 @@
 > Transform any topic into a structured, multi-module learning experience — powered by asynchronous AI workflows and priority-driven execution.
 
 🌐 **Live Demo:**  
-https://flow-767zwwbg2-rushis-projects-f751d98e.vercel.app/home
+https://flowgen-ten.vercel.app
 
 ---
 
@@ -12,7 +12,7 @@ https://flow-767zwwbg2-rushis-projects-f751d98e.vercel.app/home
 
 
 <p align="center">
-  <img src="  <img src="https://github.com/Rushi-web446/FlowGen/blob/main/FlowGen%20Screen.jpeg" width="800"/>" width="800"/>
+  <img src="./FlowGen%20Screen.jpeg" alt="FlowGen system diagram" width="800"/>
 </p>
 
 
