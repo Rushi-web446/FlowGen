@@ -9,7 +9,7 @@ https://flow-767zwwbg2-rushis-projects-f751d98e.vercel.app/home
 
 # 📐 Project Structure & System Architecture
 
-![System Architecture](./architecture_diagram.jpg)
+![System Architecture](./flowgen-architecture.jpeg)
 
 FlowGen is built on an **event-driven, asynchronous architecture** that decouples user interaction from AI computation.
 
