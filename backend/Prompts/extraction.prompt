@@ -1,7 +1,13 @@
-Extract ONLY topicName and description from the user_prompt.
+Extract topicName and description from the user_prompt.
+Rules:
+1. topicName: Short, clear name for the course.
+2. description: A clear, concise context for the course.
+3. MANDATORY: Neither field can be null or empty.
+4. FALLBACK: If the user_prompt is too short (e.g., just a topic name), generate a description like: "I want to learn more about [topicName] in depth."
+
 Return valid JSON only.
 
 user_prompt:{{prompt}}
 
-Example:
-{"topicName":"Topic","description":"Description"}
+Example output:
+{"topicName":"Dynamic Programming","description":"I want to learn Dynamic Programming and solve DSA problems effectively."}

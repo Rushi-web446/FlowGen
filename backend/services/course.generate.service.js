@@ -61,7 +61,19 @@ const generateTextFromLLM = async ({ prompt, maxTokens }) => {
 
 
 const generateTopicAndDesciptionService = async ({ prompt }) => {
-  return generateJsonFromLLM({ prompt, maxTokens: 250 });
+  const data = await generateJsonFromLLM({ prompt, maxTokens: 250 });
+
+  // Safety fallback if LLM misses the description or it's empty
+  if (!data.description || data.description.trim() === "") {
+    data.description = `I want to learn more about ${data.topicName || "this topic"} in depth.`;
+  }
+
+  // Ensure topicName isn't missing either
+  if (!data.topicName || data.topicName.trim() === "") {
+    data.topicName = "Custom Learning Course";
+  }
+
+  return data;
 };
 
 
