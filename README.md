@@ -106,7 +106,7 @@ User-facing APIs remain responsive even under heavy AI workloads.
 - Dispatches Module 1 lessons to `LOW_PRIORITY_LESSON_QUEUE` after saving
 - Fully asynchronous — API returns immediately after enqueue
 
-## � HIGH_PRIORITY_LESSON_QUEUE
+## 📗 HIGH_PRIORITY_LESSON_QUEUE
 - Triggered when a user actively navigates to a lesson
 - Processes immediately with `priority: 1`
 - Skips generation if lesson is already `GENERATED` or `GENERATING` (idempotent)
@@ -151,6 +151,11 @@ Lessons generate only when accessed.
 
 ---
 
+# 📈 Scalability Strategy
+
+- Redis queues absorb traffic spikes
+- Workers scale independently
+- Priority scheduling protects user experience
 
 ### Future Enhancements
 - Multi-tenant queues
@@ -190,8 +195,13 @@ YOUTUBE_API_KEY=your_api_key
 
 ### Backend
 ```bash
+# 1. Start API server
 npm install
 npm run dev
+```
+
+```bash
+# 2. Start workers (each in a separate terminal)
 node workers/course.worker.js
 node workers/low.priority.lesson.worker.js
 node workers/high.priority.lesson.worker.js
