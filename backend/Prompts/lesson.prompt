@@ -14,7 +14,6 @@ INPUT CONTEXT:
 Course: "{{course.title}}"
 Module: "{{module.title}}"
 Lesson: "{{lesson.title}}"
-LessonObjective: "{{lesson.lessonObjective}}"
 LessonDescription: "{{lesson.description}}"
 
 GLOBAL OUTPUT RULES (ABSOLUTE):
@@ -35,47 +34,56 @@ For every major concept, the explanation MUST include:
 - A concrete illustrative example or mental model
 
 MAIN POINTS (NON-NEGOTIABLE):
-- mainPoints MUST contain EXACTLY 4 or EXACTLY 5 items.
+- mainPoints MUST contain ***EXACTLY 4*** items.
 - Each mainPoint explanation MUST:
-  • Be ***120–180*** words (hard requirement)
+  • Be ***120–150*** words (hard requirement)
   • Explicitly include intuition + mistake analysis
   • Be conceptually distinct from other points
   • Avoid generic textbook language
   • Avoid repeating definitions
 
 
-  MCQ QUALITY RULES:
-  - EXACTLY ***5 to 7*** MCQs.
-  - Questions MUST test reasoning, not memory.
-  - options MUST be exactly 4 plain strings.
-  - NEVER use "All of the above" or "None of the above".
-  - Each explanation MUST be 2–3 sentences and:
-    • Explain why the correct option is right
-    • Explain why at least one wrong option is wrong
+MCQ QUALITY RULES:
+- EXACTLY ***5 to 6*** MCQs.
+- Questions MUST test reasoning, not memory.
+- options MUST be exactly 4 plain strings.
+- NEVER use "All of the above" or "None of the above".
+- Each explanation MUST be 2–3 sentences and:
+  • Explain why the correct option is right
+  • Explain why at least one wrong option is wrong
 
 EXAMPLES RULES:
 - Include at least ONE worked example.
 - The example MUST explain the reasoning step-by-step.
 - The example MUST show how to THINK, not just final code.
-- Use pseudo-code or structured logic where appropriate.
+- Use ***pseudo-code or structured logic*** where appropriate.
 
-Suggested Readings or External Links RULES:
-- Add 2 External links for reading
-- *** That Recourse Must be Exist ***
-- *** Page Not Found is ***not allowed*** ***.  
+EXTERNAL LINKS RULES (CRITICAL — READ CAREFULLY):
+- Add EXACTLY 2 external links.
+- You MUST ONLY use URLs from the following trusted domains. These are guaranteed to exist:
+  • https://developer.mozilla.org  (for web, JS, HTML, CSS topics)
+  • https://docs.python.org        (for Python topics)
+  • https://en.wikipedia.org       (for any general CS/concept topic)
+  • https://www.geeksforgeeks.org  (for algorithms, data structures, CS concepts)
+  • https://www.w3schools.com      (for web and programming basics)
+  • https://reactjs.org/docs       (for React topics)
+  • https://nodejs.org/en/docs     (for Node.js topics)
+  • https://docs.mongodb.com       (for MongoDB topics)
+- NEVER invent or guess a specific article slug or path you are not 100% certain exists.
+- If unsure of the exact path, use the root or top-level section URL of the domain.
+- Do NOT use any blog, medium, substack, hashnode, or unknown domain URLs.
+- A hallucinated URL that returns 404 is considered a CRITICAL FAILURE.
 
 REQUIRED JSON SCHEMA (FOLLOW EXACTLY):
 
 {
   "title": "{{lesson.title}}",
-  "lessonObjective": "Concise statement of what the learner will achieve.",
   "description": "Concise but precise technical overview of the lesson.",
   "introduction": "Motivating real-world context explaining why this concept matters.",
-  "videoQuery": "Search query for a high-quality YouTube video explaining this lesson.",
   "mainPoints": [
     {
       "heading": "Clear, concept-focused title",
-      "explanation": "***120–180*** word deep explanation following the pedagogical depth contract."
+      "explanation": "***120–150*** word deep explanation following the pedagogical depth contract."
     }
   ],
   "examples": [
@@ -97,7 +105,7 @@ REQUIRED JSON SCHEMA (FOLLOW EXACTLY):
   "external": [
     {
       "title": "string",
-      "URL": "valid URL format and must be live and exist"
+      "URL": "URL from the approved domain list only"
     }
   ]
 }
@@ -106,7 +114,7 @@ FINAL SELF-CHECK:
 Before responding, internally verify:
 - Explanations are deep, not superficial
 - A beginner could apply this to a new problem
-- videoQuery is genuinely useful
+- Each external URL is from the approved domain list and is a real, navigable page
 - JSON is valid and complete
 
 If ANY rule is violated, regenerate internally until all rules are satisfied.

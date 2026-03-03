@@ -1,42 +1,37 @@
-const { findById } = require("../repository/course.repository");
-const { lessonQueue } = require("../queues");
+const { lowPriorityLessonQueue } = require("../queues");
+const Module = require("../models/module");
 
-const addLessonToLessonQueue = async (courseId, userId) => {
-  const { updateLessonStatus, findById } = require("../repository/course.repository");
-  const course = await findById(courseId);
+const addLessonToLowPriorityLessonQueue = async (courseId) => {
 
-  if (!course) {
-    console.error(`Course with ID ${courseId} not found for lazy generation.`);
-    return;
-  }
+  // Get all modules of this course
+  const modules = await Module.find({ course: courseId })
+    .select("_id lessons")
+    .lean();
 
+  for (const module of modules) {
+    for (const lessonId of module.lessons) {
 
-  for (const currModule of course.modules) {
-    for (const currLesson of currModule.lessons) {
-
-      await updateLessonStatus(courseId, currModule.moduleIndex, currLesson.lessonIndex, "PENDING");
-
-      await lessonQueue.add(
+      await lowPriorityLessonQueue.add(
         "GENERATE_LESSON",
         {
           courseId: courseId.toString(),
-          moduleIndex: currModule.moduleIndex,
-          lessonIndex: currLesson.lessonIndex,
-          userId: userId?.toString(), 
+          moduleId: module._id.toString(),
+          lessonId: lessonId.toString(),
         },
         {
           priority: 5,
           attempts: 3,
-          backoff: {
-            type: "exponential",
-            delay: 5000,
-          },
-        },
+          backoff: { type: "exponential", delay: 5000 },
+          removeOnComplete: true,
+        }
       );
     }
+    // INTENTIONAL: Only queue Module 1 lessons for background pre-generation.
+    // Queuing all modules at once hits GROQ free-tier rate limits.
+    // Remaining modules are generated on-demand via the high-priority worker
+    // when the user navigates to them.
+    break;
   }
 };
 
-module.exports = {
-  addLessonToLessonQueue,
-};
+module.exports = { addLessonToLowPriorityLessonQueue };

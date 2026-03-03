@@ -25,14 +25,7 @@ The system leverages:
 - Redis-backed job queues
 - Priority-based execution
 - Lazy content generation
-- Fault-tolerant processing
 
-This ensures:
-
-- ⚡ Fast API responses  
-- 📈 Horizontal scalability  
-- 💰 Cost-optimized AI usage  
-- 🔒 Isolation of failures  
 
 ---
 
@@ -78,9 +71,6 @@ User-facing APIs remain responsive even under heavy AI workloads.
 - 🔄 Asynchronous processing via BullMQ  
 - 🔐 Secure authentication with Auth0  
 - 🗃 Persistent storage using MongoDB  
-- 🧩 Idempotent lesson generation  
-- 🛡 Fault-isolated worker execution  
-- 📈 Horizontally scalable architecture  
 
 ---
 
@@ -110,16 +100,25 @@ User-facing APIs remain responsive even under heavy AI workloads.
 # 🔄 Queue Architecture
 
 ## 📦 COURSE_QUEUE
-- Generates structured course outline
-- Fully asynchronous
-- Non-blocking API design
+- Triggered when user submits a course prompt
+- Worker generates structured outline via GROQ LLM
+- Saves Course, Module, and Lesson documents to MongoDB
+- Dispatches Module 1 lessons to `LOW_PRIORITY_LESSON_QUEUE` after saving
+- Fully asynchronous — API returns immediately after enqueue
 
-## 📘 LESSON_QUEUE
-- Generates lesson content
-- Supports priority-based execution
-  - High → User-triggered
-  - Low → Background lazy generation
-- Uses deterministic job IDs to prevent duplication
+## � HIGH_PRIORITY_LESSON_QUEUE
+- Triggered when a user actively navigates to a lesson
+- Processes immediately with `priority: 1`
+- Skips generation if lesson is already `GENERATED` or `GENERATING` (idempotent)
+- Marks lesson `GENERATING` before AI call, then saves on completion
+- Failure marks lesson `FAILED` — no silent data loss
+
+## 📘 LOW_PRIORITY_LESSON_QUEUE
+- Triggered automatically after course creation for background pre-generation
+- Rate-limited to 1 job per 10 seconds to stay within GROQ API limits
+- `priority: 5`, `attempts: 3`, exponential backoff on failure
+- Pre-generates Module 1 lessons so they are ready when user arrives
+- Remaining modules generate on-demand via `HIGH_PRIORITY_LESSON_QUEUE`
 
 ---
 
@@ -131,17 +130,11 @@ AI tasks never block the request-response lifecycle.
 ### 🟢 Priority-Based Scheduling
 Active users always get faster responses.
 
-### 🟢 Horizontal Scalability
-Scale by adding more workers — no API changes required.
 
 ### 🟢 Cost Optimization
 Lessons generate only when accessed.
 
-### 🟢 Fault Isolation
-Worker or AI failures never crash the API layer.
 
-### 🟢 Idempotency
-Duplicate job submissions do not corrupt data.
 
 ---
 
@@ -158,53 +151,11 @@ Duplicate job submissions do not corrupt data.
 
 ---
 
-# 💾 Data Model Overview
-
-## Course
-- Title  
-- Description  
-- Creator (Auth0 user ID)  
-- Modules  
-
-## Module
-- Title  
-- Ordered Lessons  
-- Metadata  
-
-## Lesson
-- Title  
-- Content blocks  
-- Status:
-  - `PENDING`
-  - `GENERATING`
-  - `GENERATED`
-
----
-
-# 🛡 Reliability & Failure Handling
-
-- Worker crashes do NOT lose jobs (Redis persistence)
-- Automatic job retries
-- Safe failure marking
-- AI failures isolated to worker layer
-- Graceful degradation strategy
-- No duplicate lesson generation
-
----
-
-# 📈 Scalability Strategy
-
-- Redis queues absorb traffic spikes
-- Workers scale independently
-- Queue depth monitoring supported
-- Priority scheduling protects user experience
 
 ### Future Enhancements
 - Multi-tenant queues
 - Rate limiting
 - Tier-based prioritization
-- Distributed worker clusters
-- Streaming lesson generation
 
 ---
 
@@ -229,7 +180,7 @@ MONGO_URI=your_mongodb_connection_string
 REDIS_URL=rediss://default:password@host:6379
 AUTH0_ISSUER=https://your-auth0-domain/
 AUTH0_AUDIENCE=your-api-identifier
-OPENAI_API_KEY=your_api_key
+GROQ_API_KEY=your_api_key
 YOUTUBE_API_KEY=your_api_key
 ```
 
@@ -241,6 +192,9 @@ YOUTUBE_API_KEY=your_api_key
 ```bash
 npm install
 npm run dev
+node workers/course.worker.js
+node workers/low.priority.lesson.worker.js
+node workers/high.priority.lesson.worker.js
 ```
 
 ### Frontend
@@ -251,20 +205,7 @@ npm run dev
 
 ---
 
-# 🧠 Why This Project Stands Out
 
-FlowGen demonstrates:
-
-- Distributed system design principles
-- Queue-based asynchronous architecture
-- Priority-aware workload scheduling
-- Production-grade fault tolerance
-- Cost-efficient AI orchestration
-
-This is not just an AI wrapper —  
-it is a **learning orchestration engine designed for scale.**
-
----
 
 # 👨‍💻 Author
 

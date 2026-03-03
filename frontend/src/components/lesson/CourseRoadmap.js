@@ -16,7 +16,7 @@ const CourseRoadmap = ({ courseData, isOpen, onClose, currentModuleIndex, curren
 
   const handleLessonClick = (module, lesson) => {
     navigate(`/course/${courseId}/module/${module.moduleIndex}/lesson/${lesson.lessonIndex}`);
-    onClose();
+    // Do NOT call onClose() here — that would redirect to home from CourseOverview
   };
 
   return (
@@ -93,20 +93,12 @@ const CourseRoadmap = ({ courseData, isOpen, onClose, currentModuleIndex, curren
                       return (
                         <div
                           key={lesson._id}
-                          className={`lesson-node ${lesson.isCompleted ? 'completed' : ''} ${
-                            isCurrentLesson ? 'current' : ''
-                          }`}
+                          className={`lesson-node ${isCurrentLesson ? 'current' : ''}`}
                           onClick={() => handleLessonClick(module, lesson)}
                           title={lesson.title}
                         >
-                          <span className="lesson-icon">
-                            {lesson.isCompleted ? (
-                              '✓'
-                            ) : isCurrentLesson ? (
-                              '▶'
-                            ) : (
-                              <span className="lesson-number">{lessonIdx + 1}</span>
-                            )}
+                          <span className={`lesson-icon ${isCurrentLesson ? 'current' : ''}`}>
+                            {isCurrentLesson ? '▶' : lesson.lessonIndex}
                           </span>
 
                           <div className="lesson-details">
@@ -126,14 +118,6 @@ const CourseRoadmap = ({ courseData, isOpen, onClose, currentModuleIndex, curren
           <div className="legend-item">
             <span className="legend-icon current">▶</span>
             <span>Current Lesson</span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-icon completed">✓</span>
-            <span>Completed</span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-icon pending">1</span>
-            <span>Not Started</span>
           </div>
         </div>
       </div>

@@ -7,13 +7,14 @@ const {
   checkLessonExistsService,
   saveLessonService,
   getYouTubeVideosService,
+  getUserCourseService,
 } = require("../services/course.service");
 
-const { generateLessonService } = require("../services/course.generate.service");
-const { getLessonPrompt } = require("../Prompts/helper.prompt");
+const { generateLessonService, generateHinglishService } = require("../services/course.generate.service");
+const { getLessonPrompt, getHinglishPrompt } = require("../Prompts/helper.prompt");
 
 
-
+const { getLesson, saveHinglishContent } = require("../repository/course.repository");
 
 
 
@@ -60,6 +61,25 @@ const getRecentCourses = async (req, res) => {
 
 
 
+const getUserCourse = async (req, res) => {
+  try {
+    const userId = req.appUser._id;
+    const courses = await getUserCourseService(userId);
+    return res.status(200).json({
+      success: true,
+      courses,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+
+
 
 const getCourseDetails = async (req, res) => {
   try {
@@ -86,15 +106,11 @@ const getCourseDetails = async (req, res) => {
 
 const completeLesson = async (req, res) => {
   try {
-    const courseId = req.params.id;
-    const userId = req.appUser._id;
-    const { moduleIndex, lessonIndex } = req.body;
+    const { moduleId, lessonId } = req.body;
 
     const result = await completeLessonService({
-      courseId,
-      userId,
-      moduleIndex,
-      lessonIndex,
+      moduleId,
+      lessonId,
     });
 
     return res.status(200).json({
@@ -113,22 +129,20 @@ const completeLesson = async (req, res) => {
 
 const getCurrentLessonContent = async (req, res) => {
   try {
-    const courseId = req.params.id;
-    const userId = req.appUser._id;
-    const { moduleIndex, lessonIndex } = req.query;
+    const { moduleId, lessonId } = req.query;
 
-    if (moduleIndex === null || lessonIndex === null) {
-      return res.status(400).json({
-        success: false,
-        message: "moduleIndex and lessonIndex required",
-      });
-    }
+    const safeGetId = (val) => {
+      if (!val) return val;
+      if (typeof val === 'object') return val._id ? val._id.toString() : val.toString();
+      return val;
+    };
+
+    const targetModuleId = safeGetId(moduleId);
+    const targetLessonId = safeGetId(lessonId);
 
     const data = await getLessonContentService({
-      courseId,
-      userId,
-      moduleIndex: Number(moduleIndex),
-      lessonIndex: Number(lessonIndex),
+      moduleId: targetModuleId,
+      lessonId: targetLessonId,
     });
 
     return res.status(200).json({
@@ -158,24 +172,31 @@ const getYouTubeVideos = async (req, res) => {
   }
 };
 
+
+
 const checkLessonExists = async (req, res) => {
   try {
-    const courseId = req.params.id;
-    const userId = req.appUser._id;
-    const { moduleIndex, lessonIndex } = req.query;
+    const { moduleId, lessonId } = req.query;
 
-    if (moduleIndex === null || lessonIndex === null) {
+    if (!moduleId || !lessonId) {
       return res.status(400).json({
         success: false,
-        message: "moduleIndex and lessonIndex required",
+        message: "moduleId and lessonId required",
       });
     }
 
+    const safeGetId = (val) => {
+      if (!val) return val;
+      if (typeof val === 'object') return val._id ? val._id.toString() : val.toString();
+      return val;
+    };
+
+    const targetModuleId = safeGetId(moduleId);
+    const targetLessonId = safeGetId(lessonId);
+
     const result = await checkLessonExistsService({
-      courseId,
-      userId,
-      moduleIndex: Number(moduleIndex),
-      lessonIndex: Number(lessonIndex),
+      moduleId: targetModuleId,
+      lessonId: targetLessonId,
     });
 
     return res.status(200).json({
@@ -195,10 +216,9 @@ const checkLessonExists = async (req, res) => {
 
 const saveLesson = async (req, res) => {
   try {
-    const { courseId, moduleIndex, lessonIndex, lesson } = req.body;
-    const userId = req.appUser._id;
+    const { moduleId, lessonId, lesson } = req.body;
 
-    if (!courseId || moduleIndex === null || lessonIndex === null || !lesson) {
+    if (!moduleId || !lessonId || !lesson) {
       return res.status(400).json({
         success: false,
         message: "Missing required lesson data",
@@ -206,10 +226,8 @@ const saveLesson = async (req, res) => {
     }
 
     const saved = await saveLessonService({
-      courseId,
-      userId,
-      moduleIndex: Number(moduleIndex),
-      lessonIndex: Number(lessonIndex),
+      moduleId,
+      lessonId,
       lesson,
     });
 
@@ -300,37 +318,23 @@ const resolveNextLesson = async (req, res) => {
 
 const getLessonDetails = async (req, res) => {
   try {
-    const { courseId } = req.params;
-    const { moduleIndex, lessonIndex } = req.query;
-    const userId = req.appUser._id;
+    const { moduleId, lessonId } = req.query;
 
-    if (!courseId || moduleIndex === undefined || lessonIndex === undefined) {
+    if (!moduleId || !lessonId) {
       return res.status(400).json({ message: "Missing parameters" });
     }
 
     const lessonData = await getLessonContentService({
-      courseId,
-      userId,
-      moduleIndex: Number(moduleIndex),
-      lessonIndex: Number(lessonIndex),
+      moduleId,
+      lessonId,
     });
 
     if (!lessonData || !lessonData.lesson) {
       return res.status(404).json({ message: "Lesson not found" });
     }
 
-    const query = lessonData.lesson.videoQuery || `${lessonData.lesson.title} tutorial`;
-
-    let videos = [];
-    try {
-      videos = await getYouTubeVideosService(query);
-    } catch (ytError) {
-      console.error("Failed to fetch YouTube videos (non-blocking):", ytError);
-    }
-
     return res.status(200).json({
       lesson: lessonData.lesson,
-      youtubeVideos: videos
     });
 
   } catch (error) {
@@ -339,6 +343,86 @@ const getLessonDetails = async (req, res) => {
   }
 };
 
+const explainLesson = async (req, res) => {
+  try {
+    const { courseId, moduleId, lessonId, lessonDataInEnglish } = req.body;
+
+    if (!courseId || !moduleId || !lessonId || !lessonDataInEnglish) {
+      return res.status(400).json({ message: "Missing parameters" });
+    }
+
+    // 1. Generate Prompt
+    const prompt = getHinglishPrompt(lessonDataInEnglish);
+
+    // 2. Start generation in background (fire and forget)
+    // We don't await this so the response is immediate
+    generateHinglishService(prompt)
+      .then(async (hinglishContent) => {
+        await saveHinglishContent(moduleId, lessonId, hinglishContent);
+        console.log(`[Hinglish] Background generation completed for lesson: ${lessonId}`);
+      })
+      .catch((err) => {
+        console.error(`[Hinglish] Background generation FAILED for lesson: ${lessonId}`, err);
+      });
+
+    return res.status(202).json({
+      message: "Hinglish generation started in background",
+    });
+
+  } catch (error) {
+    console.error("explainLesson error:", error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+
+const checkHinglishStatus = async (req, res) => {
+  try {
+
+    const { moduleId, lessonId } = req.query;
+
+    const safeGetId = (val) => {
+      if (!val) return val;
+      if (typeof val === 'object') return val._id ? val._id.toString() : val.toString();
+      return val;
+    };
+
+    const targetModuleId = safeGetId(moduleId);
+    const targetLessonId = safeGetId(lessonId);
+
+    const lesson = await getLesson(targetModuleId, targetLessonId);
+
+    if (!lesson) {
+      return res.status(404).json({
+        success: false,
+        message: "Lesson not found",
+      });
+    }
+
+    const hasHinglish =
+      lesson.hinglishContent &&
+      lesson.hinglishContent.trim().length > 0;
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        completed: hasHinglish,
+        hinglishContent: lesson.hinglishContent || "",
+      },
+    });
+
+  } catch (error) {
+    console.error(
+      "[CONTROLLER] checkHinglishStatus error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
 
 
 
@@ -350,7 +434,10 @@ module.exports = {
   getCurrentLessonContent,
   checkLessonExists,
   saveLesson,
-  getYouTubeVideos,
   resolveNextLesson,
   getLessonDetails,
+  explainLesson,
+  checkHinglishStatus,
+  getUserCourse,
+
 };

@@ -61,32 +61,32 @@ const generateTextFromLLM = async ({ prompt, maxTokens }) => {
 
 
 const generateTopicAndDesciptionService = async ({ prompt }) => {
-  return generateJsonFromLLM({ prompt, maxTokens: 1000 });
+  return generateJsonFromLLM({ prompt, maxTokens: 250 });
 };
 
 
 
 
 const generateOutlineService = async ({ prompt }) => {
-  return generateJsonFromLLM({ prompt, maxTokens: 5000 });
+  return generateJsonFromLLM({ prompt, maxTokens: 3800 });
 };
 
 
 
 const generateLessonService = async (prompt) => {
-  return generateJsonFromLLM({ prompt, maxTokens: 8000 });
+  return generateJsonFromLLM({ prompt, maxTokens: 4500 });
 };
 
 
 
 const generateYouTubeQueryService = async (prompt) => {
-  return generateJsonFromLLM({ prompt, maxTokens: 3000 });
+  return generateJsonFromLLM({ prompt, maxTokens: 200 });
 };
 
 
 
 const generateHinglishService = async (prompt) => {
-  return generateTextFromLLM({ prompt, maxTokens: 4000 });
+  return generateTextFromLLM({ prompt, maxTokens: 4500 });
 };
 
 

@@ -22,14 +22,14 @@ ABSOLUTE OUTPUT RULES (NON-NEGOTIABLE):
 
 COURSE-LEVEL CONSTRAINTS:
 - Total modules MUST be between ***4 and 6*** (inclusive).
-- estimatedTotalTime MUST equal the SUM of all module estimatedTime values.
+- ***List of tags*** which is suitable for the course. so prevent from duplicate course generation.
 
 MODULE-LEVEL CONSTRAINTS (CRITICAL):
 FOR EACH MODULE:
 - modules array MUST contain AT LEAST ***4 lessons AND AT MOST 6*** lessons.
 - Fewer than 4 lessons → INVALID OUTPUT.
 - More than 6 lessons → INVALID OUTPUT.
-- moduleIndex and recommendedOrder MUST start at 1 and increase sequentially.
+- moduleIndex MUST start at 1 and increase sequentially.
 
 LESSON-LEVEL CONSTRAINTS (CRITICAL):
 FOR EACH LESSON:
@@ -53,22 +53,18 @@ MANDATORY JSON SCHEMA (FOLLOW EXACTLY):
     "title": "string",
     "description": "string",
     "courseObjective": "string",
-    "skillsGained": ["string"]
+    "tags": "array",
   },
   "modules": [
     {
       "moduleIndex": number,
       "title": "string",
       "description": "string (60–90 words)",
-      "moduleObjective": "string",
-      "learningOutcomes": ["string"],
-      "topics": ["string"],
       "lessons": [
         {
           "lessonIndex": number,
           "title": "string",
           "briefDescription": "string",
-          "lessonObjective": "string"
         }
       ]
     } 
@@ -77,8 +73,8 @@ MANDATORY JSON SCHEMA (FOLLOW EXACTLY):
 
 FINAL INTERNAL VALIDATION (MANDATORY):
 Before responding, internally verify:
-- Module count is between 4 and 6
-- EACH module has 4–6 lessons
+- Module count is between ***4 and 6***
+- EACH module has ***4 and 6*** lessons
 - Difficulty progression is correct
 - JSON parses without error
 

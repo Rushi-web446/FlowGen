@@ -8,7 +8,6 @@ export const useCourseGeneration = (getAccessTokenSilently) => {
   const generateCourse = async (prompt) => {
     setLoading(true);
     setError("");
-
     try {
       const token = await getAccessTokenSilently();
       const headers = { Authorization: `Bearer ${token}` };

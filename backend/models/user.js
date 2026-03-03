@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema(
 
     Why this added differently because this is matadata about Schema not data.
     */
-    timestamps: true, 
+    timestamps: true,
   },
 );
 

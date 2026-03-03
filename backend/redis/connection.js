@@ -1,21 +1,21 @@
-const { Redis } = require("ioredis");
-
+const IORedis = require("ioredis");
 
 if (!process.env.REDIS_URL) {
-  throw new Error("REDIS_URL is not defined in environment variables");
+  throw new Error("REDIS_URL not found");
 }
 
-
-const redisConnection = new Redis(process.env.REDIS_URL, {
+const redisConnection = new IORedis(process.env.REDIS_URL, {
   tls: {},
   family: 4,
+
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
-  reconnectOnError: () => true,
-  retryStrategy(times) {
-    return Math.min(times * 500, 5000);
-  },
 
+  keepAlive: 30000,
+
+  retryStrategy(times) {
+    return Math.min(times * 500, 3000);
+  },
 });
 
 redisConnection.on("connect", () => {
@@ -23,7 +23,7 @@ redisConnection.on("connect", () => {
 });
 
 redisConnection.on("error", (err) => {
-  console.error(" Redis error", err.message);
+  console.error("Redis error:", err.message);
 });
 
 module.exports = { redisConnection };

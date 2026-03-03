@@ -6,6 +6,7 @@ import Course from "./pages/Course";
 import LoginRedirect from "./pages/LoginRedirect";
 import ProtectedRoute from "./components/ProtectedRoute";
 import CourseResolver from "./pages/CourseResolve";
+import CourseOverview from "./pages/CourseOverview";
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth0();
@@ -29,6 +30,15 @@ function App() {
       />
 
       <Route path="/course/:courseId/resolve" element={<CourseResolver />} />
+
+      <Route
+        path="/course/:courseId"
+        element={
+          <ProtectedRoute>
+            <CourseOverview />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/course/:courseId/module/:moduleIndex/lesson/:lessonIndex"

@@ -99,8 +99,8 @@ const generateYouTubeQueryController = async (req, res) => {
 
     const prompt = await getYouTubeQueryPrompt(
       courseId,
-      Number(moduleId),
-      Number(lessonId)
+      moduleId,
+      lessonId
     );
 
     const data = await generateYouTubeQueryService(prompt);

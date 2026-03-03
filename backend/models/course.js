@@ -1,52 +1,5 @@
 const mongoose = require("mongoose");
 
-// Lesson Schema
-// I will make change while updating the DB logic. 
-const lessonSchema = new mongoose.Schema(
-  {
-    lessonIndex: { type: Number, required: true },
-    title: { type: String, required: true },
-    lessonObjective: { type: String },
-    briefDescription: { type: String, required: true },
-
-    content: {
-      type: mongoose.Schema.Types.Mixed,
-      default: null,
-    },
-    hinglishContent: {
-      type: String,
-      default: "",
-    },
-    isGenerated: {
-      type: String,
-      enum: ["", "PENDING", "GENERATING", "GENERATED", "FAILED"],
-      default: ""
-    },
-
-    isCompleted: { type: Boolean, default: false },
-  },
-  { _id: true }
-);
-
-
-// Module Schema 
-const moduleSchema = new mongoose.Schema(
-  {
-    moduleIndex: { type: Number, required: true },
-    title: { type: String, required: true },
-    description: { type: String, required: true },
-
-    moduleObjective: { type: String, required: true },
-
-    topics: [{ type: String }],
-
-    lessons: [lessonSchema],
-
-    isCompleted: { type: Boolean, default: false },
-  },
-  { _id: true }
-);
-
 // Course Schema
 const courseSchema = new mongoose.Schema(
   {
@@ -55,7 +8,7 @@ const courseSchema = new mongoose.Schema(
     courseObjective: { type: String, required: true },
 
 
-    modules: [moduleSchema],
+    modules: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Module' }],
 
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -64,8 +17,8 @@ const courseSchema = new mongoose.Schema(
       index: true,
     },
 
-    lastAccessedAt: { type: Date, default: Date.now },
-    isCompleted: { type: Boolean, default: false },
+    tags: [{ type: String }],
+
   },
   {
     timestamps: true,

@@ -12,22 +12,21 @@ import CourseGenerationProgress from "../components/CourseGenerationProgress";
 import NewCourseCard from "../components/NewCourseCard";
 import "./Home.css";
 
-
-
 const Home = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
 
   const [prompt, setPrompt] = useState("");
-  const [refreshKey] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0); // ✅ FIXED
   const [waiting, setWaiting] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [previousCourses, setPreviousCourses] = useState([]);
   const [newCourseData, setNewCourseData] = useState(null);
 
-  const userReady = useAuthSync(isAuthenticated, getAccessTokenSilently, user);
-
-  console.log(previousCourses);
+  const userReady = useAuthSync(
+    isAuthenticated,
+    getAccessTokenSilently,
+    user
+  );
 
   const { courses, loading: coursesLoading } = useRecentCourses(
     isAuthenticated,
@@ -40,11 +39,13 @@ const Home = () => {
     getAccessTokenSilently
   );
 
-  const { newCourse, progressState, isPolling, startPolling, resetProgress } =
-    useJobProgress(getAccessTokenSilently);
-
-
-
+  const {
+    newCourse,
+    progressState,
+    isPolling,
+    startPolling,
+    resetProgress,
+  } = useJobProgress(getAccessTokenSilently);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -55,26 +56,33 @@ const Home = () => {
     }
 
     try {
-      setPreviousCourses([...courses]);
       setNewCourseData(null);
       resetProgress();
-
       setWaiting(true);
+
+      // Snapshot existing course IDs BEFORE generation starts.
+      // Works when courses = [] (Set will be empty) and when courses.length > 0.
+      // useJobProgress will detect any courseId NOT in this snapshot as the new course.
+      const existingCourseIds = new Set(courses.map((c) => c.courseId));
 
       await generateCourse(prompt);
       setPrompt("");
 
-      startPolling([...courses]);
+      startPolling(existingCourseIds);
     } catch (err) {
       console.warn("Course generation failed:", err);
       setWaiting(false);
     }
   };
 
+  // ✅ CRITICAL FIX — works even when user had 0 courses
   useEffect(() => {
     if (newCourse) {
       setNewCourseData(newCourse);
       setWaiting(false);
+
+      // Force re-fetch recent courses
+      setRefreshKey((prev) => prev + 1);
     }
   }, [newCourse]);
 
@@ -83,8 +91,9 @@ const Home = () => {
       <HomeSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        recentCourses={courses}
         loading={coursesLoading}
+        recentCourses={courses}
+        getAccessTokenSilently={getAccessTokenSilently}
       />
 
       <div className="home-container">
@@ -97,13 +106,17 @@ const Home = () => {
         </button>
 
         <div className="home-header">
-          <h1 className="welcome-title">Welcome back, {user?.name}!</h1>
-          <p className="welcome-subtitle">Create your next learning journey</p>
+          <h1 className="welcome-title">
+            Welcome back, {user?.name}!
+          </h1>
+          <p className="welcome-subtitle">
+            Create your next learning journey
+          </p>
         </div>
 
         <div className="course-generation-section">
           <h2 className="section-title">Create New Course</h2>
-          
+
           <form onSubmit={handleSubmit} className="course-form">
             <textarea
               className="course-textarea"
@@ -121,19 +134,19 @@ const Home = () => {
               {isPolling
                 ? "Generating Course..."
                 : loading || waiting
-                ? "Creating..."
-                : "Generate Course"}
+                  ? "Creating..."
+                  : "Generate Course"}
             </button>
           </form>
 
           {error && (
-            <div className="error-message">
-              ⚠️ {error}
-            </div>
+            <div className="error-message">⚠️ {error}</div>
           )}
-          
+
           {isPolling && (
-            <CourseGenerationProgress progressState={progressState} />
+            <CourseGenerationProgress
+              progressState={progressState}
+            />
           )}
         </div>
 
@@ -149,12 +162,17 @@ const Home = () => {
             </div>
           )}
 
-          {!coursesLoading && courses.length === 0 && !newCourseData && (
-            <div className="empty-state">
-              <div className="empty-state-icon">📚</div>
-              <p className="empty-state-text">No courses yet. Create your first course above!</p>
-            </div>
-          )}
+          {!coursesLoading &&
+            courses.length === 0 &&
+            !newCourseData && (
+              <div className="empty-state">
+                <div className="empty-state-icon">📚</div>
+                <p className="empty-state-text">
+                  No courses yet. Create your first course
+                  above!
+                </p>
+              </div>
+            )}
 
           {(courses.length > 0 || newCourseData) && (
             <div className="courses-grid">
@@ -162,23 +180,29 @@ const Home = () => {
                 <NewCourseCard
                   course={newCourseData}
                   onNavigate={(course) =>
-                    navigate(
-                      `/course/${course.courseId}/module/1/lesson/1`
-                    )
+                    navigate(`/course/${course.courseId}`)
                   }
                 />
               )}
 
-              {courses.map((course) => (
-                <div
-                  key={course.courseId}
-                  className="course-card"
-                  onClick={() => navigate(`/course/${course.courseId}/module/1/lesson/1`)}
-                >
-                  <h3 className="course-card-title">{course.courseTitle}</h3>
-                  <p className="course-card-description">{course.courseDescription}</p>
-                </div>
-              ))}
+              {courses
+                .filter((course) => course.courseId !== newCourseData?.courseId)
+                .map((course) => (
+                  <div
+                    key={course.courseId}
+                    className="course-card"
+                    onClick={() =>
+                      navigate(`/course/${course.courseId}`)
+                    }
+                  >
+                    <h3 className="course-card-title">
+                      {course.courseTitle}
+                    </h3>
+                    <p className="course-card-description">
+                      {course.courseDescription}
+                    </p>
+                  </div>
+                ))}
             </div>
           )}
         </div>

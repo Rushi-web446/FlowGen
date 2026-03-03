@@ -1,223 +1,195 @@
 const Course = require("../models/course");
+const Module = require("../models/module");
+const Lesson = require("../models/lesson");
+const mongoose = require("mongoose");
+
 
 const findById = async (courseId) => {
-  return Course.findById(courseId);
+  return await Course.findById(courseId)
+    .populate({
+      path: "modules",
+      populate: { path: "lessons" },
+    })
+    .lean();
+};
+
+
+const getModule = async (courseId, moduleId) => {
+  return await Module.findOne({
+    _id: moduleId,
+    course: courseId,
+  }).lean();
+};
+
+const getLesson = async (moduleId, lessonId) => {
+  return await Lesson.findOne({
+    _id: lessonId,
+    module: moduleId,
+  }).lean();
 };
 
 
 
-
-const getModule = async (courseId, moduleIndex) => {
-  const course = await Course.findById(courseId);
-  if (!course) return null;
-
-  return course.modules.find(
-    (m) => m.moduleIndex === Number(moduleIndex)
+const updateLessonStatus = async (moduleId, lessonId, status) => {
+  return await Lesson.findOneAndUpdate(
+    {
+      _id: lessonId,
+      module: moduleId,
+    },
+    { isGenerated: status },
+    { new: true }
   );
 };
 
 
 
 
-const getLesson = async (courseId, moduleIndex, lessonIndex) => {
-  const course = await Course.findById(courseId);
-  if (!course) return null;
-
-  const module = course.modules.find(
-    (m) => m.moduleIndex === Number(moduleIndex)
-  );
-  if (!module) return null;
-
-  const lesson = module.lessons.find(
-    (l) => l.lessonIndex === Number(lessonIndex)
-  );
-
-  return lesson;
-};
-
-
-
-
-const updateLessonStatus = async (
-  courseId,
-  moduleIndex,
-  lessonIndex,
-  status
-) => {
-  const course = await Course.findById(courseId);
-  if (!course) return;
-
-  const module = course.modules.find(
-    (m) => m.moduleIndex === Number(moduleIndex)
-  );
-  if (!module) return;
-
-  const lesson = module.lessons.find(
-    (l) => l.lessonIndex === Number(lessonIndex)
-  );
-  if (!lesson) return;
-
-  lesson.isGenerated = status;
-
-  await course.save();
-};
-
-module.exports = {
-  getLesson,
-  updateLessonStatus,
-};
-
-
-
-
+/* =========================
+   SAVE COURSE OUTLINE
+========================= */
 
 const saveCourseOutlineToDB = async (course) => {
-  const newCourse = await Course.create(course);
+
+  // create course first
+  const newCourse = await Course.create({
+    title: course.title,
+    description: course.description,
+    courseObjective: course.courseObjective || "Master the topic",
+    userId: course.userId,
+    modules: [],
+  });
+
+  for (const module of course.modules) {
+
+    const newModule = await Module.create({
+      moduleIndex: module.moduleIndex || (newCourse.modules.length + 1),
+      title: module.title || `Module ${newCourse.modules.length + 1}`,
+      description: module.description || "",
+      lessons: [],
+      course: newCourse._id,
+    });
+
+    for (const lesson of module.lessons) {
+
+      console.log("module value (saveCourseOutlineToDB):", newModule._id);
+      console.log("typeof module (saveCourseOutlineToDB):", typeof newModule._id);
+      const newLesson = await Lesson.create({
+        lessonIndex: lesson.lessonIndex || (newModule.lessons.length + 1),
+        title: lesson.title || `Lesson ${newModule.lessons.length + 1}`,
+        briefDescription: lesson.description || lesson.briefDescription || "",
+        module: newModule._id,
+        isGenerated: "PENDING",
+      });
+
+      newModule.lessons.push(newLesson._id);
+    }
+
+    await newModule.save();
+
+    newCourse.modules.push(newModule._id);
+  }
+
+  await newCourse.save();
 
   return newCourse._id;
-}
-
-
-
-
-const findRecentCoursesByUser = async (userId, limit = 3) => {
-  return await Course.find({ userId })
-    .sort({ lastAccessedAt: -1 })
-    .limit(limit)
-    .select("title description lastAccessedAt");
 };
 
 
 
+const saveHinglishContent = async (moduleId, lessonId, content) => {
+  console.log("module value (saveHinglishContent):", moduleId);
+  console.log("typeof module (saveHinglishContent):", typeof moduleId);
+  const lesson = await Lesson.findOne({
+    _id: lessonId,
+    module: moduleId,
+  });
 
+  if (!lesson) return null;
 
-const updateLastAccessed = async (courseId) => {
-  return await Course.updateOne(
-    { _id: courseId },
-    { $set: { lastAccessedAt: new Date() } }
-  );
+  lesson.hinglishContent = content;
+  await lesson.save();
+
+  return lesson;
 };
 
 
 
+/* =========================
+   RECENT COURSES
+========================= */
 
-
-
-const markLessonCompleted = async ({
-  courseId,
+const findRecentCoursesByUser = async (
   userId,
-  moduleIndex,
-  lessonIndex,
-}) => {
-  const course = await Course.findOne({ _id: courseId, userId });
-  if (!course) return null;
+  limit = 3
+) => {
+  // Prefer sorting by creation time so newly created courses appear first.
+  // Fall back to lastAccessedAt if needed for secondary ordering.
+  return await Course.find({ userId })
+    .sort({ createdAt: -1, lastAccessedAt: -1 })
+    .limit(limit)
+    .select("title description createdAt lastAccessedAt")
+    .lean();
 
-  const module = course.modules.find(
-    (m) => m.moduleIndex === moduleIndex
-  );
-  if (!module) throw new Error("Module not found");
-
-  const lesson = module.lessons.find(
-    (l) => l.lessonIndex === lessonIndex
-  );
-  if (!lesson) throw new Error("Lesson not found");
-
-  lesson.isCompleted = true;
-
-  const allLessonsCompleted = module.lessons.every(
-    (l) => l.isCompleted
-  );
-  if (allLessonsCompleted) {
-    module.isCompleted = true;
-  }
-
-  await course.save();
-  return course;
 };
 
 
 
 
+/* =========================
+   FIND LESSON FOR USER
+========================= */
 
 const findLessonForUser = async ({
-  courseId,
-  userId,
-  moduleIndex,
-  lessonIndex,
+  moduleId,
+  lessonId,
 }) => {
-  const course = await Course.findOne({ _id: courseId, userId });
-  if (!course) return null;
 
-  const module = course.modules.find(
-    (m) => m.moduleIndex === moduleIndex
-  );
-  if (!module) return null;
+  console.log("module value (findLessonForUser):", moduleId);
+  console.log("typeof module (findLessonForUser):", typeof moduleId);
+  return await Lesson.findOne({
+    _id: lessonId,
+    module: moduleId,
+  }).lean();
 
-  const lesson = module.lessons.find(
-    (l) => l.lessonIndex === lessonIndex
-  );
-  if (!lesson) return null;
-
-  return {
-    course,
-    module,
-    lesson,
-  };
 };
 
 
 
 
+/* =========================
+   CHECK LESSON EXISTS
+========================= */
 
 const checkLessonExistsForUser = async ({
-  courseId,
-  userId,
-  moduleIndex,
-  lessonIndex,
+  moduleId,
+  lessonId,
 }) => {
-  const course = await Course.findOne(
-    {
-      _id: courseId,
-      userId,
-      "modules.moduleIndex": moduleIndex,
-      "modules.lessons.lessonIndex": lessonIndex,
-    },
-    { _id: 1 }
-  );
 
-  return Boolean(course.content);
+  console.log("module value (checkLessonExistsForUser):", moduleId);
+  console.log("typeof module (checkLessonExistsForUser):", typeof moduleId);
+  const lesson = await Lesson.findOne({
+    _id: lessonId,
+    module: moduleId,
+  }).lean();
+
+  return lesson && Boolean(lesson.content);
 };
 
 
+const saveLesson = async (moduleId, lessonId, lessonObj) => {
+  const lesson = await Lesson.findOne({
+    _id: lessonId,
+    module: moduleId,
+  });
 
-
-const saveLesson = async (
-  courseId,
-  moduleIndex,
-  lessonIndex,
-  lessonObj
-) => {
-  const course = await Course.findOne({ _id: courseId });
-  if (!course) return null;
-
-  const module = course.modules.find(
-    (m) => m.moduleIndex === Number(moduleIndex)
-  );
-  if (!module) return null;
-
-  const lesson = module.lessons.find(
-    (l) => l.lessonIndex === Number(lessonIndex)
-  );
   if (!lesson) return null;
 
-  Object.assign(lesson, lessonObj);
+  if (lessonObj.title !== undefined) lesson.title = lessonObj.title;
+  if (lessonObj.content !== undefined) lesson.content = lessonObj.content;
 
-  if (lessonObj.content) {
-    lesson.isGenerated = "GENERATED";
-  }
-  await course.save();
+  if (lessonObj.content) lesson.isGenerated = "GENERATED";
 
-
+  await lesson.save();
   return lesson;
 };
 
@@ -225,16 +197,47 @@ const saveLesson = async (
 
 
 
+
+/* =========================
+   EXPORT WRAPPER
+========================= */
+
 module.exports = {
-  findById,
-  getModule,
-  getLesson,
+
+  findById: async (id) => {
+    const c = await findById(id);
+    if (!c)
+      console.error(`[REPO] findById FAILED`, id);
+    return c;
+  },
+
+  getModule: async (cid, mid) => {
+    const m = await getModule(cid, mid);
+    if (!m)
+      console.error(`[REPO] getModule FAILED`, cid, mid);
+    return m;
+  },
+
+  getLesson: async (mid, lid) => {
+    const l = await getLesson(mid, lid);
+    if (!l)
+      console.error(`[REPO] getLesson FAILED`, mid, lid);
+    return l;
+  },
+
   saveCourseOutlineToDB,
+
   findRecentCoursesByUser,
-  updateLastAccessed,
-  markLessonCompleted,
+
   findLessonForUser,
+
   checkLessonExistsForUser,
+
   saveLesson,
+
   updateLessonStatus,
+
+  saveHinglishContent,
+
+
 };

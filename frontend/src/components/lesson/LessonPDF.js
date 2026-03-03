@@ -3,15 +3,20 @@ import React, { forwardRef } from "react";
 const LessonPDF = forwardRef(({ course, lesson, youtubeVideos }, ref) => {
   if (!lesson) return null;
 
+  // split data for pagination rules
+  const intro = lesson.introduction;
+  const core = lesson.mainPoints || [];
+  const firstTwo = core.slice(0, 2);
+  const nextTwo = core.slice(2, 4);
+  const examples = lesson.examples || [];
+  const mcqs = lesson.mcqs || [];
+  const firstThreeMcqs = mcqs.slice(0, 3);
+  const remainingMcqs = mcqs.slice(3);
+  const youtube = youtubeVideos || [];
+  const external = lesson.external || [];
+
   return (
-    <div
-      ref={ref}
-      style={{
-        padding: "40px",
-        fontFamily: "Arial, sans-serif",
-        color: "#111",
-      }}
-    >
+    <div ref={ref} className="pdf-container">
       <h1 style={{ textAlign: "center" }}>{course?.title}</h1>
       <p style={{ textAlign: "center", marginBottom: "30px" }}>
         {course?.description}
@@ -21,17 +26,17 @@ const LessonPDF = forwardRef(({ course, lesson, youtubeVideos }, ref) => {
 
       <h2>{lesson.title}</h2>
 
-      {lesson.introduction && (
+      {intro && (
         <>
           <h3>Introduction</h3>
-          <p>{lesson.introduction}</p>
+          <p>{intro}</p>
         </>
       )}
 
-      {lesson.mainPoints?.length > 0 && (
+      {firstTwo.length > 0 && (
         <>
           <h3>Core Concepts</h3>
-          {lesson.mainPoints.map((p, i) => (
+          {firstTwo.map((p, i) => (
             <div key={i} style={{ marginBottom: "16px" }}>
               <strong>{p.heading}</strong>
               <p>{p.explanation}</p>
@@ -40,39 +45,49 @@ const LessonPDF = forwardRef(({ course, lesson, youtubeVideos }, ref) => {
         </>
       )}
 
-      {lesson.examples?.length > 0 && (
+      <div className="page-break" />
+
+      {nextTwo.length > 0 && (
         <>
-          <h3>Examples</h3>
-          {lesson.examples.map((ex, i) => (
-            <div key={i}>
-              <strong>{ex.title}</strong>
-              <pre style={{ whiteSpace: "pre-wrap" }}>{ex.content}</pre>
+          <h3>Core Concepts (cont.)</h3>
+          {nextTwo.map((p, i) => (
+            <div key={i} style={{ marginBottom: "16px" }}>
+              <strong>{p.heading}</strong>
+              <p>{p.explanation}</p>
             </div>
           ))}
         </>
       )}
 
-      {lesson.mcqs?.length > 0 && (
+      <div className="page-break" />
+
+      {examples.length > 0 && (
+        <>
+          <h3>Examples</h3>
+          {examples.map((ex, i) => (
+            <div key={i}>
+              <strong>{ex.title}</strong>
+              <pre className="code-block">{ex.content}</pre>
+            </div>
+          ))}
+        </>
+      )}
+
+      {firstThreeMcqs.length > 0 && (
         <>
           <h3>Quiz (With Answers)</h3>
-          {lesson.mcqs.map((q, i) => (
+          {firstThreeMcqs.map((q, i) => (
             <div key={i} style={{ marginBottom: "18px" }}>
               <p>
                 <strong>Q{i + 1}:</strong> {q.question}
               </p>
-              <ul>
+              <ol className="options">
                 {q.options.map((opt, idx) => (
-                  <li
-                    key={idx}
-                    style={{
-                      fontWeight:
-                        idx === q.answerIndex ? "bold" : "normal",
-                    }}
-                  >
+                  <li key={idx} style={{ fontWeight: idx === q.answerIndex ? "bold" : "normal" }}>
                     {opt}
                   </li>
                 ))}
-              </ul>
+              </ol>
               <p>
                 <em>Explanation:</em> {q.explanation}
               </p>
@@ -81,17 +96,60 @@ const LessonPDF = forwardRef(({ course, lesson, youtubeVideos }, ref) => {
         </>
       )}
 
-      {youtubeVideos?.length > 0 && (
+      {remainingMcqs.length > 0 && (
+        <div className="page-start">
+          <h3>Quiz (cont.)</h3>
+          {remainingMcqs.map((q, i) => (
+            <div key={i} style={{ marginBottom: "18px" }}>
+              <p>
+                <strong>Q{firstThreeMcqs.length + i + 1}:</strong> {q.question}
+              </p>
+              <ol className="options">
+                {q.options.map((opt, idx) => (
+                  <li key={idx} style={{ fontWeight: idx === q.answerIndex ? "bold" : "normal" }}>
+                    {opt}
+                  </li>
+                ))}
+              </ol>
+              <p>
+                <em>Explanation:</em> {q.explanation}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="page-break" />
+
+      {youtube.length > 0 && (
         <>
           <h3>Video Resources</h3>
-          <ul>
-            {youtubeVideos.map((v) => (
-              <li key={v.videoId}>
-                <a href={v.videoUrl}>{v.title}</a> — {v.channel}
-              </li>
-            ))}
-          </ul>
+          {youtube.map((v, idx) => (
+            <p key={v.videoId} className="youtube-item">
+              <strong>{v.title}</strong>
+              <br />
+              <a href={v.videoUrl} target="_blank" rel="noopener noreferrer">
+                {v.videoUrl}
+              </a>
+            </p>
+          ))}
         </>
+      )}
+
+      {/* Add spacing after videos then show external on same page */}
+      {external.length > 0 && (
+        <div className="external-section">
+          <h3>Suggested Readings & External Links</h3>
+          {external.map((link, idx) => (
+            <p key={idx} style={{ marginBottom: "2em" }}>
+              {typeof link === 'object' ? (
+                <a href={link.URL || link.url} target="_blank" rel="noopener noreferrer">{link.title || link.name || link.URL || link.url}</a>
+              ) : (
+                <a href={link} target="_blank" rel="noopener noreferrer">{link}</a>
+              )}
+            </p>
+          ))}
+        </div>
       )}
 
       <hr />

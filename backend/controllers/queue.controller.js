@@ -1,27 +1,18 @@
-const { courseQueue, lessonQueue } = require("../queues");
+const { courseQueue, highPriorityLessonQueue } = require("../queues");
 const { getOutlinePrompt } = require("../Prompts/helper.prompt");
-const { getLesson } = require("../repository/course.repository");
-
-const { updateLessonStatus } = require("../repository/course.repository");
-
-
-
-
-
-
+const {
+  getLesson,
+  updateLessonStatus,
+} = require("../repository/course.repository");
 
 const courseQueueController = async (req, res) => {
-
   try {
     const prompt = getOutlinePrompt(req.body);
 
-    await courseQueue.add(
-      "GENERATE_COURSE_OUTLINE", // job name not neccesary that same as queue name. ok. 
-      {
-        prompt,
-        userId: req.appUser._id,
-      },
-    );
+    await courseQueue.add("GENERATE_COURSE_OUTLINE", {
+      prompt,
+      userId: req.appUser._id,
+    });
 
     return res.status(201).json({
       message: "Course outline generation queued successfully",
@@ -33,51 +24,60 @@ const courseQueueController = async (req, res) => {
 
 
 
-
-
-
 const lessonQueueController = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { moduleIndex, lessonIndex } = req.query;
+    const { moduleId, lessonId } = req.query;
     const userId = req.appUser._id;
 
-
-
-    const lesson = await getLesson(courseId, moduleIndex, lessonIndex);
-
+    
+    const lesson = await getLesson(moduleId, lessonId);
+    
+    if (!lesson) {
+      return res.status(404).json({ error: "Lesson not found" });
+    }
+    
     if (lesson.isGenerated === "GENERATED") {
-      const lessonData = lesson.content;
-
       return res.json({
         status: "READY",
-        lesson: lesson.content, // actual lesson data
-        youtubeVideos: lesson.youtubeVideos || [],
+        lesson: {
+          ...lesson.content,
+          title: lesson.title,
+          description: lesson.briefDescription,
+          hinglishContent: lesson.hinglishContent,
+          lessonIndex: lesson.lessonIndex,
+          module: lesson.module,
+          _id: lesson._id,
+        },
+      });
+    }
+    
+    
+    if (lesson.isGenerated === "GENERATING") {
+      return res.status(202).json({
+        status: "GENERATING",
       });
     }
 
-    const status = "PENDING";
-    await updateLessonStatus(courseId, moduleIndex, lessonIndex, status);
 
-
-    await lessonQueue.add(
+    console.log(`\n\n\n &&&&&&&&&&&&&&&&&&&&&&&&&&&&& \n\n\n`);
+    
+    // Queue the lesson generation if not already GENERATED
+    await highPriorityLessonQueue.add(
       "GENERATE_LESSON",
+      { courseId, moduleId: moduleId, lessonId: lessonId, userId },
       {
-        courseId,
-        moduleIndex,
-        lessonIndex,
-        userId,
-      },
-      {
-        jobId: `lesson-${courseId}-${moduleIndex}-${lessonIndex}`,
         priority: 1,
       },
     );
-    
+
     return res.status(202).json({
       status: "GENERATING",
     });
+
+    
   } catch (err) {
+    console.error("lessonQueueController error:", err);
     return res.status(500).json({
       error: "Failed to fetch lesson",
     });

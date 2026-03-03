@@ -5,11 +5,18 @@ const courseQueue = new Queue("COURSE_QUEUE", {
   connection: redisConnection,
 });
 
-const lessonQueue = new Queue("LESSON_QUEUE", {
+const lowPriorityLessonQueue = new Queue("LOW_PRIORITY_LESSON_QUEUE", {
   connection: redisConnection,
 });
 
+const highPriorityLessonQueue = new Queue("HIGH_PRIORITY_LESSON_QUEUE", {
+  connection: redisConnection,
+});
+
+
+
 module.exports = {
   courseQueue,
-  lessonQueue,
+  lowPriorityLessonQueue,
+  highPriorityLessonQueue,
 };

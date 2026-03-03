@@ -13,52 +13,42 @@ Module: "{{module.title}}"
 Lesson: "{{lesson.title}}"
 
 ABSOLUTE RULES (NON-NEGOTIABLE):
-
-1. The output MUST be a single search query string only.
+1. Output MUST be valid JSON only.
 2. The query MUST be written from a YouTube SEO perspective, NOT natural language.
 3. The query MUST be between 6 and 12 words.
 4. The query MUST resemble real, high-performing YouTube video titles.
 
 LANGUAGE CONSTRAINT (CRITICAL):
-
 - The query MUST strongly bias English or Hindi educational content.
 - The query MUST include at least ONE language signal:
   • "English"
   • "Hindi"
   • "Hinglish"
-- Prefer phrasing commonly used by English or Indian-Hindi educators.
+- Prefer phrasing commonly used by English or Indian-Hindi educators (e.g., "in depth", "full course").
 
 MANDATORY CONTENT RULES:
-
-- The query MUST include the EXACT lesson topic.
+- The query MUST include the EXACT lesson topic from the context.
 - The query MUST include at least ONE depth signal:
-  "explained", "intuition", "step by step", "visual explanation", "with examples"
+  "explained", "intuition", "step by step", "visual explanation", "full tutorial"
 - The query MUST include at least ONE audience or domain signal:
-  "beginner", "DSA", "algorithms", "coding interview", or "problem solving"
-
+  "beginner", "advanced", "DSA", "coding interview", or "problem solving"
 
 TITLE-PATTERN CONSTRAINT:
 The query MUST follow ONE of these proven title patterns:
-- "<topic> tutorial for beginners"
-- "<topic> explained with examples"
-- "<topic> step by step full explanation"
-- "<topic> intuition explained with examples"
-- "<topic> algorithms tutorial beginner"
+- "<topic> tutorial for beginners with examples English"
+- "<topic> explained step by step full explanation Hindi"
+- "<topic> intuition and logic explained Hinglish"
+- "<topic> visually explained for interview preparation"
 
-NEGATIVE CONSTRAINTS (CRITICAL):
-- DO NOT use vague-only phrases like:
-  "introduction", "overview", "basics" unless paired with strong technical keywords.
+NEGATIVE CONSTRAINTS:
+- DO NOT use vague-only phrases like "introduction" unless paired with technical keywords.
 - DO NOT include filler words, polite language, or complete sentences.
-- DO NOT mention platforms or creators.
+- DO NOT mention platforms, websites, or specific creators.
 
 FINAL CHECK BEFORE OUTPUT:
-Ask yourself:
-"Would this exact query retrieve Abdul Bari / NeetCode / takeUforward–level videos?"
+Ask yourself: "Would this exact query retrieve Abdul Bari, NeetCode, or takeUforward level videos?"
 
-If not, rewrite internally until it would.
-
-OUTPUT:
-Return a JSON object in this format:
+OUTPUT FORMAT:
 {
   "query": "optimized search query string"
 }
