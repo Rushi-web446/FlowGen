@@ -69,9 +69,9 @@ router.get("/get/lesson/", checkJwt, syncUser, getCurrentLessonContent);
 
 
 
-// hinglish explanation for lesson
-router.post("/explain/lesson/", checkJwt, syncUser, explainLesson);
-router.get("/check/hinglish/", checkJwt, syncUser, checkHinglishStatus);
+// // hinglish explanation for lesson
+// router.post("/explain/lesson/", checkJwt, syncUser, explainLesson);
+// router.get("/check/hinglish/", checkJwt, syncUser, checkHinglishStatus);
 
 
 

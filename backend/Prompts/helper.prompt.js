@@ -10,9 +10,11 @@ const {
 
 const getOutlinePrompt = ({ topicName, description }) => {
 
-  if (!topicName || !description) {
+  if (!topicName) {
     throw new Error("topicName or description missing");
   }
+
+  if (!description) description = topicName;
 
   const filePath = path.join(__dirname, "./outline.prompt");
   const promptTemplate = fs.readFileSync(filePath, "utf-8");

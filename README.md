@@ -3,7 +3,7 @@
 > Transform any topic into a structured, multi-module learning experience — powered by asynchronous AI workflows and priority-driven execution.
 
 🌐 **Live Demo:**  
-https://flowgen-ten.vercel.app
+https://flow-gen-eight.vercel.app/home
 
 ---
 

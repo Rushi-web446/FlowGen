@@ -105,7 +105,7 @@ const useFetchLesson = ({ courseId, moduleIndex, lessonIndex }) => {
           }
 
           pollCount++;
-          await sleep(2000);
+          await sleep(1500);
         }
 
         if (pollCount >= maxPolls && !cancelled) {

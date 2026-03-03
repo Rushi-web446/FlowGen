@@ -44,13 +44,8 @@ const updateLessonStatus = async (moduleId, lessonId, status) => {
 
 
 
-/* =========================
-   SAVE COURSE OUTLINE
-========================= */
-
 const saveCourseOutlineToDB = async (course) => {
 
-  // create course first
   const newCourse = await Course.create({
     title: course.title,
     description: course.description,
@@ -113,17 +108,10 @@ const saveHinglishContent = async (moduleId, lessonId, content) => {
 };
 
 
-
-/* =========================
-   RECENT COURSES
-========================= */
-
 const findRecentCoursesByUser = async (
   userId,
   limit = 3
 ) => {
-  // Prefer sorting by creation time so newly created courses appear first.
-  // Fall back to lastAccessedAt if needed for secondary ordering.
   return await Course.find({ userId })
     .sort({ createdAt: -1, lastAccessedAt: -1 })
     .limit(limit)
@@ -135,17 +123,11 @@ const findRecentCoursesByUser = async (
 
 
 
-/* =========================
-   FIND LESSON FOR USER
-========================= */
-
 const findLessonForUser = async ({
   moduleId,
   lessonId,
 }) => {
 
-  console.log("module value (findLessonForUser):", moduleId);
-  console.log("typeof module (findLessonForUser):", typeof moduleId);
   return await Lesson.findOne({
     _id: lessonId,
     module: moduleId,
@@ -155,18 +137,11 @@ const findLessonForUser = async ({
 
 
 
-
-/* =========================
-   CHECK LESSON EXISTS
-========================= */
-
 const checkLessonExistsForUser = async ({
   moduleId,
   lessonId,
 }) => {
 
-  console.log("module value (checkLessonExistsForUser):", moduleId);
-  console.log("typeof module (checkLessonExistsForUser):", typeof moduleId);
   const lesson = await Lesson.findOne({
     _id: lessonId,
     module: moduleId,
@@ -197,10 +172,6 @@ const saveLesson = async (moduleId, lessonId, lessonObj) => {
 
 
 
-
-/* =========================
-   EXPORT WRAPPER
-========================= */
 
 module.exports = {
 

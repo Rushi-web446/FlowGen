@@ -343,88 +343,6 @@ const getLessonDetails = async (req, res) => {
   }
 };
 
-const explainLesson = async (req, res) => {
-  try {
-    const { courseId, moduleId, lessonId, lessonDataInEnglish } = req.body;
-
-    if (!courseId || !moduleId || !lessonId || !lessonDataInEnglish) {
-      return res.status(400).json({ message: "Missing parameters" });
-    }
-
-    // 1. Generate Prompt
-    const prompt = getHinglishPrompt(lessonDataInEnglish);
-
-    // 2. Start generation in background (fire and forget)
-    // We don't await this so the response is immediate
-    generateHinglishService(prompt)
-      .then(async (hinglishContent) => {
-        await saveHinglishContent(moduleId, lessonId, hinglishContent);
-        console.log(`[Hinglish] Background generation completed for lesson: ${lessonId}`);
-      })
-      .catch((err) => {
-        console.error(`[Hinglish] Background generation FAILED for lesson: ${lessonId}`, err);
-      });
-
-    return res.status(202).json({
-      message: "Hinglish generation started in background",
-    });
-
-  } catch (error) {
-    console.error("explainLesson error:", error);
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-
-const checkHinglishStatus = async (req, res) => {
-  try {
-
-    const { moduleId, lessonId } = req.query;
-
-    const safeGetId = (val) => {
-      if (!val) return val;
-      if (typeof val === 'object') return val._id ? val._id.toString() : val.toString();
-      return val;
-    };
-
-    const targetModuleId = safeGetId(moduleId);
-    const targetLessonId = safeGetId(lessonId);
-
-    const lesson = await getLesson(targetModuleId, targetLessonId);
-
-    if (!lesson) {
-      return res.status(404).json({
-        success: false,
-        message: "Lesson not found",
-      });
-    }
-
-    const hasHinglish =
-      lesson.hinglishContent &&
-      lesson.hinglishContent.trim().length > 0;
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        completed: hasHinglish,
-        hinglishContent: lesson.hinglishContent || "",
-      },
-    });
-
-  } catch (error) {
-    console.error(
-      "[CONTROLLER] checkHinglishStatus error:",
-      error
-    );
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-};
-
-
 
 module.exports = {
   saveCourseOutlineToDB,
@@ -436,8 +354,6 @@ module.exports = {
   saveLesson,
   resolveNextLesson,
   getLessonDetails,
-  explainLesson,
-  checkHinglishStatus,
   getUserCourse,
 
 };

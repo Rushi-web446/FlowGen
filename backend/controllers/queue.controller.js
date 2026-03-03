@@ -30,13 +30,13 @@ const lessonQueueController = async (req, res) => {
     const { moduleId, lessonId } = req.query;
     const userId = req.appUser._id;
 
-    
+
     const lesson = await getLesson(moduleId, lessonId);
-    
+
     if (!lesson) {
       return res.status(404).json({ error: "Lesson not found" });
     }
-    
+
     if (lesson.isGenerated === "GENERATED") {
       return res.json({
         status: "READY",
@@ -51,18 +51,16 @@ const lessonQueueController = async (req, res) => {
         },
       });
     }
-    
-    
+
+
     if (lesson.isGenerated === "GENERATING") {
       return res.status(202).json({
         status: "GENERATING",
       });
     }
 
+    await updateLessonStatus(moduleId, lessonId, "GENERATING");
 
-    console.log(`\n\n\n &&&&&&&&&&&&&&&&&&&&&&&&&&&&& \n\n\n`);
-    
-    // Queue the lesson generation if not already GENERATED
     await highPriorityLessonQueue.add(
       "GENERATE_LESSON",
       { courseId, moduleId: moduleId, lessonId: lessonId, userId },
@@ -75,7 +73,7 @@ const lessonQueueController = async (req, res) => {
       status: "GENERATING",
     });
 
-    
+
   } catch (err) {
     console.error("lessonQueueController error:", err);
     return res.status(500).json({
