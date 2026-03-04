@@ -15,8 +15,8 @@ connectDB();
 const { Worker } = require("bullmq");
 
 const {
-    getLesson,
-    updateLessonStatus,
+  getLesson,
+  updateLessonStatus,
 } = require("../repository/course.repository");
 
 
@@ -25,7 +25,7 @@ const { getLessonPrompt } = require("../Prompts/helper.prompt");
 
 
 const {
-    generateLessonService,
+  generateLessonService,
 } = require("../services/course.generate.service");
 const { saveLessonService } = require("../services/course.service");
 
@@ -42,7 +42,7 @@ const highPriorityLessonWorker = new Worker(
   async (job) => {
     const { courseId, moduleId, lessonId } = job.data;
 
-console.log("JOB DATA:", job.data);
+    console.log("JOB DATA:", job.data);
 
 
     try {
@@ -50,8 +50,7 @@ console.log("JOB DATA:", job.data);
 
       if (
         existingLesson &&
-        (existingLesson.isGenerated === "GENERATED" ||
-          existingLesson.isGenerated === "GENERATING")
+        existingLesson.isGenerated === "GENERATED"
       ) {
         return { skipped: true };
       }
@@ -81,15 +80,15 @@ console.log("JOB DATA:", job.data);
 
 
 highPriorityLessonWorker.on("completed", (job) => {
-    console.log(` [EVENT] Job completed | jobId=${job.id}`);
+  console.log(` [EVENT] Job completed | jobId=${job.id}`);
 });
 
 highPriorityLessonWorker.on("failed", (job, err) => {
-    console.error(` [EVENT] Job failed | jobId=${job?.id}`, err);
+  console.error(` [EVENT] Job failed | jobId=${job?.id}`, err);
 });
 
 highPriorityLessonWorker.on("error", (err) => {
-    console.error(" [EVENT] Worker error:", err);
+  console.error(" [EVENT] Worker error:", err);
 });
 
 console.log(" [BOOT] High priority lesson worker is running");

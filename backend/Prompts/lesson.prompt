@@ -30,82 +30,61 @@ For every major concept, the explanation MUST include:
 - Core idea (what it is)
 - Intuition (how to think about it)
 - Why beginners commonly get it wrong
-- When to use it and when NOT to use it
-- A concrete illustrative example or mental model
+- A concrete mental model
 
 MAIN POINTS (NON-NEGOTIABLE):
-- mainPoints MUST contain ***EXACTLY 4*** items.
+- mainPoints MUST contain ***EXACTLY 3*** items.
 - Each mainPoint explanation MUST:
-  • Be ***120–150*** words (hard requirement)
+  • Be ***80–100*** words (hard requirement)
   • Explicitly include intuition + mistake analysis
   • Be conceptually distinct from other points
-  • Avoid generic textbook language
-  • Avoid repeating definitions
-
 
 MCQ QUALITY RULES:
-- EXACTLY ***5 to 6*** MCQs.
+- EXACTLY ***4 to 5*** MCQs.
 - Questions MUST test reasoning, not memory.
 - options MUST be exactly 4 plain strings.
-- NEVER use "All of the above" or "None of the above".
-- Each explanation MUST be 2–3 sentences and:
-  • Explain why the correct option is right
-  • Explain why at least one wrong option is wrong
+- Each explanation MUST be 2–3 sentences.
 
 EXAMPLES RULES:
 - Include at least ONE worked example.
-- The example MUST explain the reasoning step-by-step.
-- The example MUST show how to THINK, not just final code.
 - Use ***pseudo-code or structured logic*** where appropriate.
 
-EXTERNAL LINKS RULES (CRITICAL — READ CAREFULLY):
+EXTERNAL LINKS RULES:
 - Add EXACTLY 2 external links.
-- You MUST ONLY use URLs from the following trusted domains. These are guaranteed to exist:
-  • https://developer.mozilla.org  (for web, JS, HTML, CSS topics)
-  • https://docs.python.org        (for Python topics)
-  • https://en.wikipedia.org       (for any general CS/concept topic)
-  • https://www.geeksforgeeks.org  (for algorithms, data structures, CS concepts)
-  • https://www.w3schools.com      (for web and programming basics)
-  • https://reactjs.org/docs       (for React topics)
-  • https://nodejs.org/en/docs     (for Node.js topics)
-  • https://docs.mongodb.com       (for MongoDB topics)
-- NEVER invent or guess a specific article slug or path you are not 100% certain exists.
-- If unsure of the exact path, use the root or top-level section URL of the domain.
-- Do NOT use any blog, medium, substack, hashnode, or unknown domain URLs.
-- A hallucinated URL that returns 404 is considered a CRITICAL FAILURE.
+- Use only approved domains (MDN, Python docs, Wikipedia, GeeksforGeeks, W3Schools, React, Node, MongoDB).
 
 REQUIRED JSON SCHEMA (FOLLOW EXACTLY):
 
 {
   "title": "{{lesson.title}}",
-  "description": "Concise but precise technical overview of the lesson.",
-  "introduction": "Motivating real-world context explaining why this concept matters.",
+  "description": "Concise but precise technical overview.",
+  "introduction": "Motivating real-world context.",
   "mainPoints": [
     {
-      "heading": "Clear, concept-focused title",
-      "explanation": "***120–150*** word deep explanation following the pedagogical depth contract."
+      "heading": "Concept title",
+      "explanation": "80–100 word deep explanation."
     }
   ],
   "examples": [
     {
       "type": "code/logic",
       "title": "Worked Example",
-      "content": "Step-by-step reasoning with logic or pseudo-code."
+      "content": "Step-by-step reasoning."
     }
   ],
   "mcqs": [
     {
-      "question": "Conceptual question that tests understanding",
+      "question": "Conceptual question",
       "options": ["string", "string", "string", "string"],
       "answerIndex": number,
-      "explanation": "2–3 sentences explaining correctness and eliminating misconceptions."
+      "explanation": "2–3 sentences."
     }
   ],
-  "summary": "3–5 concise, insight-focused takeaways.",
+  "summary": "3 concise takeaways.",
   "external": [
     {
       "title": "string",
-      "URL": "URL from the approved domain list only"
+      "URL": "URL"
     }
   ]
 }

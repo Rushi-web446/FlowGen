@@ -31,6 +31,8 @@ const lessonQueueController = async (req, res) => {
     const userId = req.appUser._id;
 
 
+
+
     const lesson = await getLesson(moduleId, lessonId);
 
     if (!lesson) {
@@ -58,6 +60,8 @@ const lessonQueueController = async (req, res) => {
         status: "GENERATING",
       });
     }
+
+    console.log("\n\n\n lessonQueueController \n\n\n", courseId, moduleId, lessonId, userId);
 
     await updateLessonStatus(moduleId, lessonId, "GENERATING");
 

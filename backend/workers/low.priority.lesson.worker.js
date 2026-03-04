@@ -29,16 +29,15 @@ const lowPriorityLessonWorker = new Worker(
   async (job) => {
     const { courseId, moduleId, lessonId } = job.data;
 
-console.log("JOB DATA:", job.data);
+    console.log("JOB DATA:", job.data);
 
 
-try {
+    try {
       const existingLesson = await getLesson(moduleId, lessonId);
 
       if (
         existingLesson &&
-        (existingLesson.isGenerated === "GENERATED" ||
-          existingLesson.isGenerated === "GENERATING")
+        existingLesson.isGenerated === "GENERATED"
       ) {
         console.log("[WORKER] Lesson already processed. Skipping.");
         return { skipped: true };
