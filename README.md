@@ -5,8 +5,6 @@
 🌐 **Live Demo:**  
 https://flow-gen-eight.vercel.app/home
 
-🎥 **YouTube Video:**  
-https://www.youtube.com/watch?v=9PJwWKduHKU
 
 ---
 
