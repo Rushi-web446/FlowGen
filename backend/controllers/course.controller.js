@@ -8,21 +8,27 @@ const {
   saveLessonService,
   getYouTubeVideosService,
   getUserCourseService,
+  generateCourseFlow,
 } = require("../services/course.service");
 
-const { generateLessonService, generateHinglishService } = require("../services/course.generate.service");
-const { getLessonPrompt, getHinglishPrompt } = require("../Prompts/helper.prompt");
+const {
+  generateLessonService,
+  generateHinglishService,
+} = require("../services/course.generate.service");
+const {
+  getLessonPrompt,
+  getHinglishPrompt,
+} = require("../Prompts/helper.prompt");
 
-
-const { getLesson, saveHinglishContent } = require("../repository/course.repository");
-
-
+const {
+  getLesson,
+  saveHinglishContent,
+} = require("../repository/course.repository");
 
 const saveCourseOutlineToDB = async (req, res) => {
   try {
     const outline = req.body;
     const userId = req.appUser._id;
-
 
     const savedCourseId = await saveCourseOutlineToDBService({
       outline,
@@ -40,10 +46,9 @@ const saveCourseOutlineToDB = async (req, res) => {
   }
 };
 
-
-
-
 const getRecentCourses = async (req, res) => {
+  console.log("\n\n\n\n c ***************************\n\n\n");
+
   try {
     const userId = req.appUser._id;
     const courses = await getRecentCoursesService(userId);
@@ -58,8 +63,6 @@ const getRecentCourses = async (req, res) => {
     });
   }
 };
-
-
 
 const getUserCourse = async (req, res) => {
   try {
@@ -78,8 +81,87 @@ const getUserCourse = async (req, res) => {
 };
 
 
+const setupSSE = (res) => {
+
+  res.setHeader(
+    "Content-Type",
+    "text/event-stream"
+  );
+
+  res.setHeader(
+    "Cache-Control",
+    "no-cache"
+  );
+
+  res.setHeader(
+    "Connection",
+    "keep-alive"
+  );
+
+  res.flushHeaders();
+};
 
 
+
+const handleCourseGeneration = async (req, res) => {
+  try {
+    // Validate incoming request
+    const userPrompt = req.body?.prompt?.trim();
+    const userId = req.appUser?._id;
+
+    if (!userPrompt) {
+      return res.status(400).json({
+        success: false,
+        message: "Prompt is required. Please provide a learning topic or description.",
+      });
+    }
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User authentication failed. Please log in again.",
+      });
+    }
+
+    if (userPrompt.length < 3) {
+      return res.status(400).json({
+        success: false,
+        message: "Prompt must be at least 3 characters long.",
+      });
+    }
+
+    if (userPrompt.length > 500) {
+      return res.status(400).json({
+        success: false,
+        message: "Prompt must not exceed 500 characters.",
+      });
+    }
+
+    console.log(`\n🎓 Course generation initiated by user: ${userId}`);
+    console.log(`📝 Prompt: ${userPrompt}\n`);
+
+    // Set up Server-Sent Events (SSE)
+    setupSSE(res);
+
+    // Start the course generation flow with userId
+    return await generateCourseFlow(userPrompt, res, userId);
+  } catch (error) {
+    console.error("❌ handleCourseGeneration error:", error);
+
+    // Only send error if headers not yet sent
+    if (!res.headersSent) {
+      res.write(
+        `data: ${JSON.stringify({
+          type: "ERROR",
+          message: "Course generation failed unexpectedly",
+          error: process.env.NODE_ENV === "development" ? error.message : undefined,
+        })}\n\n`,
+      );
+    }
+
+    return res.end();
+  }
+};
 
 const getCourseDetails = async (req, res) => {
   try {
@@ -100,9 +182,6 @@ const getCourseDetails = async (req, res) => {
     });
   }
 };
-
-
-
 
 const completeLesson = async (req, res) => {
   try {
@@ -125,15 +204,14 @@ const completeLesson = async (req, res) => {
   }
 };
 
-
-
 const getCurrentLessonContent = async (req, res) => {
   try {
     const { moduleId, lessonId } = req.query;
 
     const safeGetId = (val) => {
       if (!val) return val;
-      if (typeof val === 'object') return val._id ? val._id.toString() : val.toString();
+      if (typeof val === "object")
+        return val._id ? val._id.toString() : val.toString();
       return val;
     };
 
@@ -157,9 +235,6 @@ const getCurrentLessonContent = async (req, res) => {
   }
 };
 
-
-
-
 const getYouTubeVideos = async (req, res) => {
   try {
     const query = req.body?.data?.query;
@@ -171,8 +246,6 @@ const getYouTubeVideos = async (req, res) => {
     return res.status(500).json({ message: err.message });
   }
 };
-
-
 
 const checkLessonExists = async (req, res) => {
   try {
@@ -187,7 +260,8 @@ const checkLessonExists = async (req, res) => {
 
     const safeGetId = (val) => {
       if (!val) return val;
-      if (typeof val === 'object') return val._id ? val._id.toString() : val.toString();
+      if (typeof val === "object")
+        return val._id ? val._id.toString() : val.toString();
       return val;
     };
 
@@ -210,9 +284,6 @@ const checkLessonExists = async (req, res) => {
     });
   }
 };
-
-
-
 
 const saveLesson = async (req, res) => {
   try {
@@ -245,9 +316,6 @@ const saveLesson = async (req, res) => {
   }
 };
 
-
-
-
 const resolveNextLesson = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -257,7 +325,10 @@ const resolveNextLesson = async (req, res) => {
       return res.status(400).json({ message: "Course ID is required" });
     }
 
-    const courseDetails = await getCourseDetailsWithProgressService(courseId, userId);
+    const courseDetails = await getCourseDetailsWithProgressService(
+      courseId,
+      userId,
+    );
 
     if (!courseDetails || !courseDetails.progress) {
       return res.status(404).json({ message: "Course progress not found" });
@@ -273,22 +344,28 @@ const resolveNextLesson = async (req, res) => {
     });
 
     if (!lessonExistsResult.exists) {
-      console.log(`Generating lesson for Course: ${courseId}, Module: ${currentModule}, Lesson: ${currentLesson}`);
+      console.log(
+        `Generating lesson for Course: ${courseId}, Module: ${currentModule}, Lesson: ${currentLesson}`,
+      );
 
       const lessonPrompt = await getLessonPrompt(
         courseId,
         Number(currentModule),
-        Number(currentLesson)
+        Number(currentLesson),
       );
 
       if (!lessonPrompt) {
-        return res.status(404).json({ message: "Failed to generate lesson prompt" });
+        return res
+          .status(404)
+          .json({ message: "Failed to generate lesson prompt" });
       }
 
       const generatedData = await generateLessonService(lessonPrompt);
 
       if (!generatedData) {
-        return res.status(500).json({ message: "Failed to generate lesson content" });
+        return res
+          .status(500)
+          .json({ message: "Failed to generate lesson content" });
       }
 
       await saveLessonService({
@@ -296,7 +373,7 @@ const resolveNextLesson = async (req, res) => {
         userId,
         moduleIndex: Number(currentModule),
         lessonIndex: Number(currentLesson),
-        lesson: generatedData
+        lesson: generatedData,
       });
     }
 
@@ -305,16 +382,11 @@ const resolveNextLesson = async (req, res) => {
       moduleIndex: currentModule,
       lessonIndex: currentLesson,
     });
-
   } catch (error) {
     console.error("resolveNextLesson error:", error);
     return res.status(500).json({ message: error.message });
   }
 };
-
-
-
-
 
 const getLessonDetails = async (req, res) => {
   try {
@@ -336,13 +408,11 @@ const getLessonDetails = async (req, res) => {
     return res.status(200).json({
       lesson: lessonData.lesson,
     });
-
   } catch (error) {
     console.error("getLessonDetails error:", error);
     return res.status(500).json({ message: error.message });
   }
 };
-
 
 module.exports = {
   saveCourseOutlineToDB,
@@ -355,5 +425,5 @@ module.exports = {
   resolveNextLesson,
   getLessonDetails,
   getUserCourse,
-
+  handleCourseGeneration,
 };

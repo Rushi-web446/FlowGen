@@ -8,11 +8,12 @@ const syncUser = require('./middleware/user.sync.middleware');
 
 const userRoutes = require("./routes/user.route");
 const coursesRoute = require("./routes/course.route");
+const authRoutes = require("./routes/auth.route");
 
-// Start Workers
-require("./workers/course.worker");
-require("./workers/low.priority.lesson.worker");
-require("./workers/high.priority.lesson.worker");
+// // Start Workers
+// require("./workers/course.worker");
+// require("./workers/low.priority.lesson.worker");
+// require("./workers/high.priority.lesson.worker");
 
 
 
@@ -27,9 +28,15 @@ app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
+app.use("/auth", authRoutes);
 app.use("/course", coursesRoute);
-
 app.use("/user", checkJwt, syncUser, userRoutes);
+
+
+
+
+
+
 
 app.use((err, req, res, next) => {
   if (err.name === "UnauthorizedError") {

@@ -1,11 +1,20 @@
 const User = require("../models/user");
 
 const syncUser = async (req, res, next) => {
-
-
-
-    
+  console.log("\n\n reaching syncUser middleware \n\n");
+  
   try {
+    // Handle local JWT tokens
+    if (req.user && req.user.userId) {
+      const user = await User.findById(req.user.userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      req.appUser = user;
+      return next();
+    }
+
+    // Handle Auth0 tokens (for future Auth0 support)
     if (!req.auth || !req.auth.sub) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -20,10 +29,6 @@ const syncUser = async (req, res, next) => {
       req.auth[`${namespace}name`] ||
       req.auth.name ||
       (email ? email.split("@")[0] : "User");
-
-
-
-
 
     if (!email) {
       return res.status(400).json({

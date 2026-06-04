@@ -10,6 +10,7 @@ const { saveCourseOutlineToDB, getRecentCourses, getCourseDetails,
   explainLesson,
   checkHinglishStatus,
   getUserCourse,
+  handleCourseGeneration,
 } = require("../controllers/course.controller.js");
 
 const { getYouTubeVideos } = require("../controllers/YouTube.controller.js");
@@ -28,8 +29,30 @@ const router = express.Router();
 router.post("/extract", checkJwt, syncUser, generateTopicAndDesciption);
 
 
-// Generate Course Outline
-router.post("/generate/outline", checkJwt, syncUser, courseQueueController);
+// // Generate Course Outline
+// router.post("/generate/outline", checkJwt, syncUser, courseQueueController);
+
+
+
+
+
+
+
+
+
+
+
+router.post("/generate/outline", checkJwt, syncUser, handleCourseGeneration);
+
+
+
+
+
+
+
+
+
+
 
 
 router.post("/save/outline", checkJwt, syncUser, saveCourseOutlineToDB);
@@ -39,6 +62,7 @@ router.post("/save/outline", checkJwt, syncUser, saveCourseOutlineToDB);
 router.get("/recent", checkJwt, syncUser, getRecentCourses); // users top 3 recent access course
 
 router.get("/course", checkJwt, syncUser, getUserCourse); //  user's course history
+
 
 
 router.get("/details/:id", checkJwt, syncUser, getCourseDetails); // course detailes for showing roadmap 

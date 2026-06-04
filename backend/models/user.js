@@ -16,7 +16,10 @@ const userSchema = new mongoose.Schema(
     auth0Id: {
       type: String,
       unique: true,
-      required: true,
+      sparse: true,
+    },
+    password: {
+      type: String,
     },
     createdAt: {
       type: Date,

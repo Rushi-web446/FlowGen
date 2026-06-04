@@ -19,14 +19,15 @@ const {
 
 const generateTopicAndDesciption = async (req, res) => {
   try {
-    const prompt = await getTopicAndDesciptionExtractionPrompt(req.body);
+    const prompt = req.body.prompt;
+    console.log(`\n\n from controller printing user_prompt : \n {prompt} \n\n\n`);
     const data = await generateTopicAndDesciptionService({ prompt });
     return res.status(201).json({
       message: "course topic and descrptio generated Successfully",
       data,
     });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.status(400).json({ message: error.message });z
   }
 };
 

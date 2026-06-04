@@ -171,49 +171,82 @@ Lessons generate only when accessed.
 
 ## Prerequisites
 
-- Node.js 18+
-- MongoDB Atlas account
-- Upstash Redis instance
+- Node.js 20+ (matches Docker image)
+- Docker Desktop (optional, for local Redis/Mongo and containerized backend)
+- MongoDB Atlas **or** the MongoDB service from Docker Compose
+- Upstash Redis **or** the Redis service from Docker Compose
 - Auth0 application
 
 ---
 
 ## Environment Variables
 
-Create `.env` in backend directory:
+Copy `backend/.env.example` to `backend/.env` and fill in secrets.
 
 ```env
 PORT=3001
-MONGO_URI=your_mongodb_connection_string
-REDIS_URL=rediss://default:password@host:6379
+MONGODB_URI=mongodb+srv://...   # Atlas, or local URI from .env.example
+REDIS_URL=redis://localhost:6379   # local Docker Redis; use rediss://... for Upstash (production)
 AUTH0_ISSUER=https://your-auth0-domain/
 AUTH0_AUDIENCE=your-api-identifier
 GROQ_API_KEY=your_api_key
 YOUTUBE_API_KEY=your_api_key
 ```
 
+Redis TLS is chosen automatically: `rediss://` enables TLS (Upstash/production); `redis://` disables TLS (local Docker).
+
 ---
 
-## Running Locally
+## Docker (local development)
+
+From the repository root:
+
+1. Copy `docker-compose.env.example` to `.env` in the **repo root** (Compose reads it for `AUTH0_*` and API keys passed into the backend container).
+2. Start Redis, MongoDB, and the backend with hot reload:
+
+```bash
+docker compose up --build
+```
+
+The API listens on `http://localhost:3001`. Run the React app on the host for fast refresh:
+
+```bash
+cd frontend
+npm install
+set REACT_APP_API_URL=http://localhost:3001
+npm start
+```
+
+(On macOS/Linux use `export REACT_APP_API_URL=http://localhost:3001`.)
+
+To run only Redis and MongoDB (Node on the host), use:
+
+```bash
+docker compose up -d redis mongo
+```
+
+Then set `REDIS_URL=redis://localhost:6379` and a matching `MONGODB_URI` in `backend/.env` (see `backend/.env.example`).
+
+---
+
+## Running Locally (without Docker for the API)
 
 ### Backend
+
 ```bash
-# 1. Start API server
+cd backend
 npm install
 npm run dev
 ```
 
-```bash
-# 2. Start workers (each in a separate terminal)
-node workers/course.worker.js
-node workers/low.priority.lesson.worker.js
-node workers/high.priority.lesson.worker.js
-```
+Workers are started from `server.js` together with the API; you do not need separate worker terminals unless you run worker files alone for debugging.
 
 ### Frontend
+
 ```bash
+cd frontend
 npm install
-npm run dev
+npm start
 ```
 
 ---

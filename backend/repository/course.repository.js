@@ -3,8 +3,7 @@ const Module = require("../models/module");
 const Lesson = require("../models/lesson");
 const mongoose = require("mongoose");
 
-
-const findById = async (courseId) => {
+const findCourseById = async (courseId) => {
   return await Course.findById(courseId)
     .populate({
       path: "modules",
@@ -12,7 +11,6 @@ const findById = async (courseId) => {
     })
     .lean();
 };
-
 
 const getModule = async (courseId, moduleId) => {
   return await Module.findOne({
@@ -28,8 +26,6 @@ const getLesson = async (moduleId, lessonId) => {
   }).lean();
 };
 
-
-
 const updateLessonStatus = async (moduleId, lessonId, status) => {
   return await Lesson.findOneAndUpdate(
     {
@@ -37,27 +33,46 @@ const updateLessonStatus = async (moduleId, lessonId, status) => {
       module: moduleId,
     },
     { isGenerated: status },
-    { new: true }
+    { new: true },
   );
 };
 
-
-
-
-const saveCourseOutlineToDB = async (course) => {
-
-  const newCourse = await Course.create({
-    title: course.title,
-    description: course.description,
-    courseObjective: course.courseObjective || "Master the topic",
-    userId: course.userId,
-    modules: [],
-  });
+const saveCourseOutlineToDB = async (course, existingCourseId = null) => {
+  let newCourse;
+  if (existingCourseId) {
+    // Update existing course
+    newCourse = await Course.findById(existingCourseId);
+    if (!newCourse) {
+      throw new Error(`Course with id ${existingCourseId} not found`);
+    }
+    // Update title and description if provided
+    if (course.title) newCourse.title = course.title;
+    if (course.description) newCourse.description = course.description;
+    if (course.courseObjective)
+      newCourse.courseObjective = course.courseObjective;
+    // Clear existing modules (we'll add new ones)
+    // First delete old modules and lessons to avoid orphaned docs
+    if (newCourse.modules && newCourse.modules.length > 0) {
+      const oldModules = await Module.find({ _id: { $in: newCourse.modules } });
+      const oldLessonIds = oldModules.flatMap((m) => m.lessons);
+      await Lesson.deleteMany({ _id: { $in: oldLessonIds } });
+      await Module.deleteMany({ _id: { $in: newCourse.modules } });
+    }
+    newCourse.modules = [];
+  } else {
+    // Create new course
+    newCourse = await Course.create({
+      title: course.title,
+      description: course.description,
+      courseObjective: course.courseObjective || "Master the topic",
+      userId: course.userId,
+      modules: [],
+    });
+  }
 
   for (const module of course.modules) {
-
     const newModule = await Module.create({
-      moduleIndex: module.moduleIndex || (newCourse.modules.length + 1),
+      moduleIndex: module.moduleIndex || newCourse.modules.length + 1,
       title: module.title || `Module ${newCourse.modules.length + 1}`,
       description: module.description || "",
       lessons: [],
@@ -65,11 +80,13 @@ const saveCourseOutlineToDB = async (course) => {
     });
 
     for (const lesson of module.lessons) {
-
       console.log("module value (saveCourseOutlineToDB):", newModule._id);
-      console.log("typeof module (saveCourseOutlineToDB):", typeof newModule._id);
+      console.log(
+        "typeof module (saveCourseOutlineToDB):",
+        typeof newModule._id,
+      );
       const newLesson = await Lesson.create({
-        lessonIndex: lesson.lessonIndex || (newModule.lessons.length + 1),
+        lessonIndex: lesson.lessonIndex || newModule.lessons.length + 1,
         title: lesson.title || `Lesson ${newModule.lessons.length + 1}`,
         briefDescription: lesson.description || lesson.briefDescription || "",
         module: newModule._id,
@@ -89,8 +106,6 @@ const saveCourseOutlineToDB = async (course) => {
   return newCourse._id;
 };
 
-
-
 const saveHinglishContent = async (moduleId, lessonId, content) => {
   console.log("module value (saveHinglishContent):", moduleId);
   console.log("typeof module (saveHinglishContent):", typeof moduleId);
@@ -107,41 +122,71 @@ const saveHinglishContent = async (moduleId, lessonId, content) => {
   return lesson;
 };
 
-
-const findRecentCoursesByUser = async (
-  userId,
-  limit = 3
-) => {
+const findRecentCoursesByUser = async (userId, limit = 3) => {
   return await Course.find({ userId })
     .sort({ createdAt: -1, lastAccessedAt: -1 })
     .limit(limit)
     .select("title description createdAt lastAccessedAt")
     .lean();
-
 };
 
 
 
 
-const findLessonForUser = async ({
-  moduleId,
-  lessonId,
-}) => {
 
+const searchVectorDB = async (embedding) => {
+  try {
+    const result = await Course.aggregate([
+      {
+        $vectorSearch: {
+          index: "course_embedding_index",
+
+          path: "embedding",
+
+          queryVector: embedding,
+
+          numCandidates: 100,
+
+          limit: 1,
+        },
+      },
+
+      {
+        $project: {
+          title: 1,
+          description: 1,
+          learningIntent: 1,
+          score: {
+            $meta: "vectorSearchScore",
+          },
+        },
+      },
+    ]);
+
+    if (!result || result.length === 0) {
+      return null;
+    }
+
+    return result[0];
+  } catch (error) {
+    console.error("Vector Search Error:", error.message);
+
+    throw error;
+  }
+};
+
+
+
+
+
+const findLessonForUser = async ({ moduleId, lessonId }) => {
   return await Lesson.findOne({
     _id: lessonId,
     module: moduleId,
   }).lean();
-
 };
 
-
-
-const checkLessonExistsForUser = async ({
-  moduleId,
-  lessonId,
-}) => {
-
+const checkLessonExistsForUser = async ({ moduleId, lessonId }) => {
   const lesson = await Lesson.findOne({
     _id: lessonId,
     module: moduleId,
@@ -149,7 +194,6 @@ const checkLessonExistsForUser = async ({
 
   return lesson && Boolean(lesson.content);
 };
-
 
 const saveLesson = async (moduleId, lessonId, lessonObj) => {
   const lesson = await Lesson.findOne({
@@ -168,47 +212,36 @@ const saveLesson = async (moduleId, lessonId, lessonObj) => {
   return lesson;
 };
 
+// Wrapped versions with logging
+const wrappedFindById = async (id) => {
+  const c = await findCourseById(id);
+  if (!c) console.error(`[REPO] findById FAILED`, id);
+  return c;
+};
 
+const wrappedGetModule = async (cid, mid) => {
+  const m = await getModule(cid, mid);
+  if (!m) console.error(`[REPO] getModule FAILED`, cid, mid);
+  return m;
+};
 
-
-
+const wrappedGetLesson = async (mid, lid) => {
+  const l = await getLesson(mid, lid);
+  if (!l) console.error(`[REPO] getLesson FAILED`, mid, lid);
+  return l;
+};
 
 module.exports = {
-
-  findById: async (id) => {
-    const c = await findById(id);
-    if (!c)
-      console.error(`[REPO] findById FAILED`, id);
-    return c;
-  },
-
-  getModule: async (cid, mid) => {
-    const m = await getModule(cid, mid);
-    if (!m)
-      console.error(`[REPO] getModule FAILED`, cid, mid);
-    return m;
-  },
-
-  getLesson: async (mid, lid) => {
-    const l = await getLesson(mid, lid);
-    if (!l)
-      console.error(`[REPO] getLesson FAILED`, mid, lid);
-    return l;
-  },
-
+  // Export the wrapped versions as the public API
+  findById: wrappedFindById,
+  getModule: wrappedGetModule,
+  getLesson: wrappedGetLesson,
   saveCourseOutlineToDB,
-
   findRecentCoursesByUser,
-
   findLessonForUser,
-
   checkLessonExistsForUser,
-
   saveLesson,
-
   updateLessonStatus,
-
   saveHinglishContent,
-
-
+  searchVectorDB
 };

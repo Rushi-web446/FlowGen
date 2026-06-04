@@ -11,7 +11,6 @@ Generate a complete, professional course outline from the given topic.
 
 INPUT:
 Topic: "{{topic}}"
-Context: "{{description}}"
 
 ABSOLUTE OUTPUT RULES (NON-NEGOTIABLE):
 1. Output MUST be raw, valid JSON only.
@@ -21,14 +20,13 @@ ABSOLUTE OUTPUT RULES (NON-NEGOTIABLE):
 5. All arrays MUST satisfy size constraints exactly.
 
 COURSE-LEVEL CONSTRAINTS:
-- Total modules MUST be between ***4 and 6*** (inclusive).
-- ***List of tags*** which is suitable for the course. so prevent from duplicate course generation.
+- Total modules MUST be between ***4*** (inclusive).
 
 MODULE-LEVEL CONSTRAINTS (CRITICAL):
 FOR EACH MODULE:
-- modules array MUST contain AT LEAST ***4 lessons AND AT MOST 6*** lessons.
-- Fewer than 4 lessons → INVALID OUTPUT.
-- More than 6 lessons → INVALID OUTPUT.
+- modules array MUST contain AT LEAST ***3 lessons AND AT MOST 4*** lessons.
+- Fewer than 3 lessons → INVALID OUTPUT.
+- More than 4 lessons → INVALID OUTPUT.
 - moduleIndex MUST start at 1 and increase sequentially.
 
 LESSON-LEVEL CONSTRAINTS (CRITICAL):

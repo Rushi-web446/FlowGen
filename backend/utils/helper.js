@@ -1,12 +1,14 @@
 const { lowPriorityLessonQueue } = require("../queues");
 const Module = require("../models/module");
 
-const addLessonToLowPriorityLessonQueue = async (courseId) => {
+const addLessonToLazyLessonGenerationQueue = async (courseId) => {
 
   // Get all modules of this course
   const modules = await Module.find({ course: courseId })
     .select("_id lessons")
     .lean();
+
+    return;
 
   for (const module of modules) {
     for (const lessonId of module.lessons) {
@@ -34,4 +36,4 @@ const addLessonToLowPriorityLessonQueue = async (courseId) => {
   }
 };
 
-module.exports = { addLessonToLowPriorityLessonQueue };
+module.exports = { addLessonToLazyLessonGenerationQueue };

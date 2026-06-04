@@ -9,15 +9,14 @@ export const useRecentCourses = (
 ) => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
-
   useEffect(() => {
     if (!isAuthenticated || !userReady) return;
-
+    
     const loadCourses = async () => {
       try {
         setLoading(true);
         const token = await getAccessTokenSilently();
-
+        
         const res = await api.get("/course/recent", {
           headers: {
             Authorization: `Bearer ${token}`,

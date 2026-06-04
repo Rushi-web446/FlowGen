@@ -15,7 +15,7 @@ connectDB();
 const { Worker } = require("bullmq");
 const { generateOutlineService } = require("../services/course.generate.service");
 const { saveCourseOutlineToDBService } = require("../services/course.service");
-const { addLessonToLowPriorityLessonQueue } = require("../utils/helper");
+const { addLessonToLazyLessonGenerationQueue } = require("../utils/helper");
 
 
 
@@ -31,7 +31,7 @@ const courseWorker = new Worker(
 
     const courseId = await saveCourseOutlineToDBService(generatedOutline, userId);
 
-    await addLessonToLowPriorityLessonQueue(courseId);
+    await addLessonToLazyLessonGenerationQueue(courseId);
 
     return { courseId };
   },

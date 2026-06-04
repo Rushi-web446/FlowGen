@@ -1,25 +1,13 @@
 const IORedis = require("ioredis");
 
-if (!process.env.REDIS_URL) {
-  throw new Error("REDIS_URL not found");
-}
-
-const redisConnection = new IORedis(process.env.REDIS_URL, {
-  tls: {},
-  family: 4,
-
+const redisConnection = new IORedis({
+  host: "localhost",
+  port: 6379,
   maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-
-  keepAlive: 30000,
-
-  retryStrategy(times) {
-    return Math.min(times * 500, 3000);
-  },
 });
 
 redisConnection.on("connect", () => {
-  console.log("Redis connected (Upstash)");
+  console.log("Redis connected");
 });
 
 redisConnection.on("error", (err) => {

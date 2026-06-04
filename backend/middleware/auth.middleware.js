@@ -1,21 +1,22 @@
 
+const jwt = require("jsonwebtoken");
 
-const { expressjwt: jwt } = require("express-jwt");
-const jwksRsa = require("jwks-rsa");
+const checkJwt = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
 
+  if (!token) {
+    return res.status(401).json({ message: "No token provided" });
+  }
 
-
-const checkJwt = jwt({
-  secret: jwksRsa.expressJwtSecret({
-    cache: true,
-    rateLimit: true,
-    jwksRequestsPerMinute: 5,
-    jwksUri: "https://dev-4xlxb5a75bgzk3js.us.auth0.com/.well-known/jwks.json",
-  }),
-  audience: "https://text-to-learn-api",
-  issuer: "https://dev-4xlxb5a75bgzk3js.us.auth0.com/",
-  algorithms: ["RS256"],
-});
-
+  try {
+    // Try to verify as local JWT first
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key");
+    req.user = decoded;
+    return next();
+  } catch (err) {
+    // If local JWT fails, you could add Auth0 verification here in future
+    return res.status(401).json({ message: "Invalid Token" });
+  }
+};
 
 module.exports = checkJwt;

@@ -1,19 +1,36 @@
 const mongoose = require("mongoose");
 
-// Module Schema 
 const moduleSchema = new mongoose.Schema(
-    {
-        moduleIndex: { type: Number, required: true },
-        title: { type: String, required: true },
-        description: { type: String, required: true },
-
-        course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
-
-
-        lessons: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Lesson' }]
-
+  {
+    moduleIndex: {
+      type: Number,
+      required: true,
     },
-    { _id: true }
+
+    title: {
+      type: String,
+      required: true,
+    },
+
+    description: {
+      type: String,
+      required: true,
+    },
+
+    course: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+      required: true,
+      index: true,
+    },
+
+  },
+  {
+    timestamps: true,
+  }
 );
 
-module.exports = mongoose.model("Module", moduleSchema);
+module.exports = mongoose.model(
+  "Module",
+  moduleSchema
+);

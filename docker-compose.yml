@@ -1,0 +1,57 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-flowgen}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-flowgen_dev}
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: "3001"
+      REDIS_URL: redis://redis:6379
+      MONGODB_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME:-flowgen}:${MONGO_INITDB_ROOT_PASSWORD:-flowgen_dev}@mongo:27017/flowgen?authSource=admin
+      AUTH0_ISSUER: ${AUTH0_ISSUER:-}
+      AUTH0_AUDIENCE: ${AUTH0_AUDIENCE:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
+      BASE_URL: ${BASE_URL:-https://youtube.googleapis.com/youtube/v3}
+      JWT_SECRET: ${JWT_SECRET:-}
+      CHOKIDAR_USEPOLLING: "true"
+    depends_on:
+      redis:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - backend_node_modules:/app/node_modules
+    command: npm run dev
+
+volumes:
+  mongo_data:
+  backend_node_modules:

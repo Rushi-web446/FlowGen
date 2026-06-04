@@ -2,9 +2,35 @@ const mongoose = require("mongoose");
 
 const lessonSchema = new mongoose.Schema(
   {
-    lessonIndex: { type: Number, required: true },
-    title: { type: String, required: true },
-    briefDescription: { type: String, required: true },
+    lessonIndex: {
+      type: Number,
+      required: true,
+    },
+
+    title: {
+      type: String,
+      required: true,
+    },
+
+    realWorldProblem: {
+      type: String,
+      required: true,
+    },
+
+    learnerTakeaway: {
+      type: String,
+      required: true,
+    },
+
+    completionCriteria: {
+      type: String,
+      required: true,
+    },
+
+    briefDescription: {
+      type: String,
+      required: true,
+    },
 
     content: {
       type: mongoose.Schema.Types.Mixed,
@@ -18,7 +44,12 @@ const lessonSchema = new mongoose.Schema(
 
     isGenerated: {
       type: String,
-      enum: ["", "PENDING", "GENERATING", "GENERATED", "FAILED"],
+      enum: [
+        "PENDING",
+        "GENERATING",
+        "GENERATED",
+        "FAILED",
+      ],
       default: "PENDING",
     },
 
@@ -29,10 +60,17 @@ const lessonSchema = new mongoose.Schema(
       index: true,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-// compound index for faster queries
-lessonSchema.index({ module: 1, _id: 1 });
+lessonSchema.index({
+  module: 1,
+  lessonIndex: 1,
+});
 
-module.exports = mongoose.model("Lesson", lessonSchema);
+module.exports = mongoose.model(
+  "Lesson",
+  lessonSchema
+);
