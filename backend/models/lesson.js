@@ -59,6 +59,11 @@ const lessonSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+
+    youtubeQuery: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
   },
   {
     timestamps: true,

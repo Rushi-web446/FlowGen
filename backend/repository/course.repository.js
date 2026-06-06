@@ -12,19 +12,22 @@ const findCourseById = async (courseId) => {
     .lean();
 };
 
-const getModule = async (courseId, moduleId) => {
+const getModule = async (moduleId) => {
   return await Module.findOne({
     _id: moduleId,
     course: courseId,
   }).lean();
 };
 
-const getLesson = async (moduleId, lessonId) => {
+
+const getLesson = async (lessonId) => {
   return await Lesson.findOne({
     _id: lessonId,
-    module: moduleId,
-  }).lean();
+  });
 };
+
+
+
 
 const updateLessonStatus = async (moduleId, lessonId, status) => {
   return await Lesson.findOneAndUpdate(
@@ -186,14 +189,17 @@ const findLessonForUser = async ({ moduleId, lessonId }) => {
   }).lean();
 };
 
-const checkLessonExistsForUser = async ({ moduleId, lessonId }) => {
+
+
+const checkLessonExistsForUser = async (lessonId) => {
   const lesson = await Lesson.findOne({
     _id: lessonId,
-    module: moduleId,
   }).lean();
 
   return lesson && Boolean(lesson.content);
 };
+
+
 
 const saveLesson = async (moduleId, lessonId, lessonObj) => {
   const lesson = await Lesson.findOne({
@@ -205,6 +211,7 @@ const saveLesson = async (moduleId, lessonId, lessonObj) => {
 
   if (lessonObj.title !== undefined) lesson.title = lessonObj.title;
   if (lessonObj.content !== undefined) lesson.content = lessonObj.content;
+  if (lessonObj.youtubeQuery !== undefined) lesson.youtubeQuery = lessonObj.youtubeQuery;
 
   if (lessonObj.content) lesson.isGenerated = "GENERATED";
 
@@ -225,11 +232,13 @@ const wrappedGetModule = async (cid, mid) => {
   return m;
 };
 
-const wrappedGetLesson = async (mid, lid) => {
-  const l = await getLesson(mid, lid);
-  if (!l) console.error(`[REPO] getLesson FAILED`, mid, lid);
+
+const wrappedGetLesson = async (lid) => {
+  const l = await getLesson(lid);
+  if (!l) console.error(`[REPO] getLesson FAILED`, lid);
   return l;
 };
+
 
 module.exports = {
   // Export the wrapped versions as the public API

@@ -25,29 +25,10 @@ const router = express.Router();
 
 
 
-// Extract Course Topic and Description
-router.post("/extract", checkJwt, syncUser, generateTopicAndDesciption);
-
-
-// // Generate Course Outline
-// router.post("/generate/outline", checkJwt, syncUser, courseQueueController);
-
-
-
-
-
-
-
-
 
 
 
 router.post("/generate/outline", checkJwt, syncUser, handleCourseGeneration);
-
-
-
-
-
 
 
 
@@ -68,8 +49,32 @@ router.get("/course", checkJwt, syncUser, getUserCourse); //  user's course hist
 router.get("/details/:id", checkJwt, syncUser, getCourseDetails); // course detailes for showing roadmap 
 
 
-// generating or fetching lesson via high priority queue.
-router.get("/get/lesson/:courseId", checkJwt, syncUser, lessonQueueController);
+// generating or fetching lesson
+// router.get("/get/lesson/:courseId", checkJwt, syncUser, lessonQueueController);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+router.post("/generate/lesson", checkJwt, syncUser, generateLesson);
+
+
+
+
+
+
+
+
+
 
 
 
@@ -86,7 +91,7 @@ router.post("/get/utube", checkJwt, syncUser, getYouTubeVideos);
 
 // crude on lesson 
 router.get("/check/lesson/:id", checkJwt, syncUser, checkLessonExists);
-router.post("/generate/lesson", checkJwt, syncUser, generateLesson);
+// router.post("/generate/lesson", checkJwt, syncUser, generateLesson);
 router.post("/save/lesson", checkJwt, syncUser, saveLesson);
 router.get("/get/lesson/", checkJwt, syncUser, getCurrentLessonContent);
 

@@ -7,6 +7,7 @@ const {
   saveLesson,
   saveHinglishContent,
   searchVectorDB,
+  getLesson,
 } = require("../repository/course.repository");
 
 const { addLessonToLazyLessonGenerationQueue } = require("../utils/helper");
@@ -22,6 +23,7 @@ const { generateEmbedding } = require("./ai_embeding_service");
 const {
   generateOutlineService,
   intentGenerationService,
+  generateLessonService,
 } = require("./course.generate.service");
 
 
@@ -397,6 +399,7 @@ const getLessonContentService = async ({ moduleId, lessonId }) => {
   };
 };
 
+
 const getYouTubeVideosService = async (query) => {
   try {
     return await getYouTubeVideos(query);
@@ -405,14 +408,12 @@ const getYouTubeVideosService = async (query) => {
   }
 };
 
-const checkLessonExistsService = async ({ moduleId, lessonId }) => {
-  const exists = await checkLessonExistsForUser({
-    moduleId,
-    lessonId,
-  });
 
+const checkLessonExistsService = async (lessonId) => {
+  const exists = await checkLessonExistsForUser(lessonId);
   return { exists };
 };
+
 
 const saveLessonService = async (moduleId, lessonId, lesson) => {
   let actualLesson = lesson;
@@ -447,6 +448,135 @@ const saveHinglishContentService = async (moduleId, lessonId, content) => {
   return await saveHinglishContent(moduleId, lessonId, content);
 };
 
+
+
+const lessonGenerationFlow = async (lessonId, res) => {
+  try {
+    if (!lessonId) {
+      stream(res, "❌ Error: Lesson ID is missing");
+      return res.end();
+    }
+
+
+
+    stream(res, "🔍 Fetching lesson details...");
+
+    // Fetch lesson from DB
+    const lesson = await getLesson(lessonId);
+    if (!lesson) {
+      throw new Error("Lesson not found");
+    }
+
+
+
+    // Check if lesson already generated
+    if (lesson.isGenerated === "GENERATED" && lesson.content) {
+      stream(res, "✅ Lesson already generated. Retrieving from cache...");
+      stream(
+        res,
+        "✅ Lesson loaded successfully!",
+        {
+          type: "SUCCESS",
+          lesson: {
+            _id: lesson._id,
+            title: lesson.title,
+            description: lesson.briefDescription,
+            content: lesson.content,
+            youtubeQuery: lesson.youtubeQuery,
+            isGenerated: lesson.isGenerated,
+          },
+        }
+      );
+      return res.end();
+    }
+
+
+
+    stream(res, "🤖 Generating lesson content...");
+
+    // Prepare lesson data for generation
+    const lessonData = {
+      title: lesson.title,
+      realWorldProblem: lesson.realWorldProblem,
+      learnerTakeaway: lesson.learnerTakeaway,
+      completionCriteria: lesson.completionCriteria,
+      briefDescription: lesson.briefDescription,
+    };
+
+
+
+    // Generate lesson content
+    const genLesson = await generateLessonService(lessonData);
+    if (!genLesson) {
+      throw new Error("Failed to generate lesson content");
+    }
+
+
+
+    stream(res, "📹 Generating YouTube query and fetching videos...");
+
+    // Fetch YouTube videos
+    const videos = await getYouTubeVideosService(
+      genLesson.youtubeQuery?.query || lesson.title
+    );
+
+    console.log(`\n\n\n printing videos : ${JSON.stringify(videos)} \n\n\n`);
+
+    // Prepare final lesson object
+    const finalLesson = {
+      content: genLesson.data || genLesson,
+      youtubeQuery: {
+        query: genLesson.youtubeQuery?.query || lesson.title,
+        videos: videos || [],
+      },
+      isGenerated: "GENERATED",
+    };
+
+    stream(res, "💾 Saving lesson to database...");
+
+    // Save lesson with content and videos
+    const savedLesson = await saveLessonService(
+      lesson.module,
+      lessonId,
+      finalLesson
+    );
+    if (!savedLesson) {
+      throw new Error("Failed to save lesson to database");
+    }
+
+    stream(
+      res,
+      "✅ Lesson generated and saved successfully!",
+      {
+        type: "SUCCESS",
+        lesson: {
+          _id: savedLesson._id,
+          title: savedLesson.title,
+          description: savedLesson.briefDescription,
+          content: savedLesson.content,
+          youtubeQuery: savedLesson.youtubeQuery,
+          isGenerated: savedLesson.isGenerated,
+        },
+      }
+    );
+
+    return res.end();
+  } catch (error) {
+    console.error("❌ lessonGenerationFlow error:", error);
+    res.write(
+      `data: ${JSON.stringify({
+        type: "ERROR",
+        message: error.message || "Lesson generation failed",
+        error:
+          process.env.NODE_ENV === "development" ? error.stack : undefined,
+      })}\n\n`
+    );
+    return res.end();
+  }
+};
+
+
+
 module.exports = {
   saveCourseOutlineToDBService,
   getRecentCoursesService,
@@ -459,4 +589,5 @@ module.exports = {
   saveHinglishContentService,
   getUserCourseService,
   generateCourseFlow,
+  lessonGenerationFlow,
 };

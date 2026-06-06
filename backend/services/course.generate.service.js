@@ -134,6 +134,118 @@ FAILURE RECOVERY:
 If you cannot generate a field that meets constraints, retry up to 3 times with different phrasing. If still failing, mark that field null – but this should happen in <1% of cases.
 `;
 
+
+const lesson_generation_system_prompt = `
+
+SYSTEM ROLE:
+You are a clarity engineer + YouTube SEO strategist. Your job: generate a lesson 
+that delivers on its 5 input fields AND provides a YouTube query that finds the 
+perfect supplementary video.
+
+CORE MISSION:
+Take the 5 input fields and produce:
+1. A crystal-clear lesson (no fluff, exactly 3 MCQs)
+2. A YouTube search query that finds a video matching the lesson's specific problem
+
+THE 5-INPUT CONTRACT (ABSOLUTE):
+For EACH input field, your output MUST explicitly deliver on its promise.
+
+FAILURE CONDITIONS:
+- Learner cannot answer MCQs correctly after reading → FAIL
+- YouTube query would NOT retrieve a video solving the realWorldProblem → FAIL
+- Lesson adds anything not supporting the 5 inputs → FAIL
+
+OUTPUT SCHEMA (COMPLETE):
+
+{
+  "lesson": {
+    
+    "opening": {
+      "theProblem": "Restate realWorldProblem in 2-3 sentences. Make learner feel the exact pain.",
+      "thePromise": "Restate learnerTakeaway as 'By the end, you will [exact takeaway]'"
+    },
+    
+    "coreExplanation": {
+      "inPlainEnglish": "Explain using briefDescription as your guide. Max 4 sentences. No jargon without definition.",
+      "example": "One concrete example showing the concept in action. Max 6 lines of code/pseudocode.",
+      "whyItWorks": "Explain the example in 2 sentences. Connect back to plain English definition."
+    },
+    
+    "theTrap": {
+      "whatBeginnersThink": "One sentence: The wrong mental model from realWorldProblem.",
+      "whyWrong": "One sentence: What breaks when they think this way.",
+      "theFix": "One sentence: The correct way to think about it."
+    },
+    
+    "verification": {
+      "checkYourself": "Restate completionCriteria as 'You understand this when: [exact criteria]'",
+      "quickTest": "One simple question: 'Without looking, what does [key term] mean?'"
+    },
+    
+    "mcqs": [
+      {
+        "question": "Tests understanding of core concept",
+        "options": ["correct", "trap based on realWorldProblem", "distractor", "wrong mental model"],
+        "correctIndex": 0,
+        "explanation": "1 sentence why correct. 1 sentence why wrong answers are tempting."
+      }
+    ],
+    
+    "closing": {
+      "youCanNow": "Restate learnerTakeaway as 'You can now [takeaway] because [core reason]'",
+      "whatsNext": "One sentence showing next logical topic"
+    }
+  },
+  
+  "youtubeQuery": {
+    "query": "string"
+  }
+}
+
+MCQ CONSTRAINTS:
+- EXACTLY 3 MCQs
+- Each explanation: max 30 words
+- At least 2 MCQs test application, not definition
+
+YOUTUBE QUERY CONSTRAINTS (STRICT):
+
+The query MUST:
+1. Be 6-12 words
+2. Include the EXACT lesson title
+3. Include the SPECIFIC problem from realWorldProblem (not generic)
+4. Include ONE of these depth signals: "explained", "fix", "solve", "tutorial", "walkthrough"
+5. Include ONE language signal: "English" or "Hindi"
+
+The query MUST follow ONE of these patterns:
+- "[lesson title] [realWorldProblem in 2-3 words] explained English"
+- "How to fix [realWorldProblem short version] [lesson title] tutorial"
+- "[lesson title] solve [specific problem] step by step English"
+
+FORBIDDEN in query:
+- Vague words: "introduction", "basics", "overview"
+- Filler: "please", "best", "top", "video for"
+
+SELF-CHECK FOR YOUTUBE QUERY:
+[ ] Would this query find a video that solves the realWorldProblem?
+[ ] Does it include the lesson title exactly?
+[ ] Is it 6-12 words?
+[ ] Would Abdul Bari or NeetCode level video appear?
+
+LENGTH CONSTRAINTS:
+- Total output: 1800-3000 characters
+- No sentence longer than 20 words
+
+FINAL SELF-CHECK:
+[ ] Did I explicitly address all 5 inputs?
+[ ] Can learner answer all 3 MCQs after reading once?
+[ ] Does YouTube query directly match realWorldProblem?
+
+If ANY fail → REGENERATE.
+
+`;
+
+
+
 const generateJsonFromLLM = async (
   SYSTEM_PROMPT,
   USER_PROMPT,
@@ -217,6 +329,8 @@ const generateJsonFromLLM = async (
   throw lastError;
 };
 
+
+
 const generateTextFromLLM = async ({ prompt, maxTokens }) => {
   const response = await groq.chat.completions.create({
     model: "llama-3.1-8b-instant",
@@ -238,6 +352,8 @@ const generateTextFromLLM = async ({ prompt, maxTokens }) => {
 
   return raw.trim();
 };
+
+
 
 const generateTopicAndDesciptionService = async ({ prompt }) => {
   console.log(`\n\n from service printing user_prompt : \n ${prompt} \n\n\n`);
@@ -282,14 +398,40 @@ Now, execute the generation using the "Curriculum Architect Pro" system prompt a
   );
 };
 
-const generateLessonService = async (prompt) => {
-  // The lesson.prompt file already includes the system role, so we can pass the entire prompt as user prompt? Or split? Let's just pass the entire prompt as user prompt and use an empty system prompt for now, or better—parse out the system part? Wait no, let's just pass the entire prompt as user prompt and use the system prompt from lesson.prompt! Wait, actually, the entire content of lesson.prompt is the system prompt + the input context? Let's just pass the entire prompt as user prompt with an empty system prompt? Wait let's just use the first part as system prompt? Wait no—let's just pass the entire prompt as the system prompt? Wait let's think: the generateJsonFromLLM function takes SYSTEM_PROMPT as first parameter, USER_PROMPT as second. But the lesson.prompt file's entire content is a combined system + user prompt. Hmm, let's just pass the entire prompt as the system prompt and an empty user prompt, or vice versa? Let's just pass the entire prompt as the system prompt and the user prompt as "Generate the lesson as per the instructions." Wait let's just do this:
-  return generateJsonFromLLM(
-    prompt,
-    "Generate the lesson content as per the instructions above.",
-    4500,
-  );
+
+
+const generateLessonService = async (lesson) => {
+
+  const lesson_generation_user_prompt = `
+  
+  Generate a lesson using the system prompt above.
+
+INPUT:
+{
+  "title": "${lesson.title}",
+  "realWorldProblem": "${lesson.realWorldProblem}",
+  "learnerTakeaway": "${lesson.learnerTakeaway}",
+  "completionCriteria": "${lesson.completionCriteria}",
+  "briefDescription": "${lesson.briefDescription}"
+}
+
+RULES REMINDER:
+- Exactly 3 MCQs
+- Address all 5 inputs explicitly
+- No fluff, no extra sections
+- Output only valid JSON
+
+Generate now.
+  `;
+
+
+      console.log(`\n\n\n\n\n\n\n  printing actual user prompt : \n\n\n\n  ${lesson_generation_user_prompt}\n\n\n`);
+
+
+  return generateJsonFromLLM(lesson_generation_system_prompt, lesson_generation_user_prompt, 3000);
 };
+
+
 
 const generateYouTubeQueryService = async (prompt) => {
   return generateJsonFromLLM(
@@ -302,6 +444,8 @@ const generateYouTubeQueryService = async (prompt) => {
 const generateHinglishService = async (prompt) => {
   return generateTextFromLLM({ prompt, maxTokens: 4500 });
 };
+
+
 
 const intentGenerationService = async (user_prompt) => {
   const actualPrompt =

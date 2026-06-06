@@ -5,6 +5,8 @@ const {
   generateYouTubeQueryService,
 } = require("../services/course.generate.service");
 
+const { checkLessonExistsService, lessonGenerationFlow } = require("../services/course.service");
+
 
 const {
   getOutlinePrompt,
@@ -12,6 +14,9 @@ const {
   getTopicAndDesciptionExtractionPrompt,
   getYouTubeQueryPrompt,
 } = require("../Prompts/helper.prompt");
+
+const { getLesson } = require("../repository/course.repository");
+
 
 
 
@@ -56,34 +61,24 @@ const generateOutline = async (req, res) => {
 
 const generateLesson = async (req, res) => {
   try {
-    const { courseId, moduleId, lessonId } = req.body;
+    const { lessonId } = req.body;
 
-    if (!courseId || !moduleId || !lessonId) {
+
+    if (!lessonId) {
       return res.status(400).json({
-        message: "courseId, moduleId, lessonId are required",
+        message: "lessonId is required",
       });
     }
 
+    // Setup SSE headers
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
 
 
-    const lessonPrompt = await getLessonPrompt(
-      courseId,
-      Number(moduleId),
-      Number(lessonId)
-    );
+    // Call lessonGenerationFlow with SSE response
+    return await lessonGenerationFlow(lessonId, res);
 
-    if (!lessonPrompt) {
-      return res.status(404).json({
-        message: "Lesson not found",
-      });
-    }
-
-    const data = await generateLessonService(lessonPrompt);
-
-    return res.status(201).json({
-      message: "Lesson generated successfully",
-      data,
-    });
   } catch (error) {
     console.error("Error in generateLesson:", error);
     return res.status(500).json({ message: error.message });

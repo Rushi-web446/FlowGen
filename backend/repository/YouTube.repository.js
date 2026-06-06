@@ -24,6 +24,9 @@ const getYouTubeVideos = async (query) => {
         );
 
 
+        console.log(`\n\n\n\n\n   comming to this or not : ${query} \n\n\n\n`);
+
+
         if (!searchRes.data?.items?.length) return [];
 
 
