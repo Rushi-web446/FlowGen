@@ -137,8 +137,6 @@ const handleCourseGeneration = async (req, res) => {
       });
     }
 
-    console.log(`\n🎓 Course generation initiated by user: ${userId}`);
-    console.log(`📝 Prompt: ${userPrompt}\n`);
 
     // Set up Server-Sent Events (SSE)
     setupSSE(res);

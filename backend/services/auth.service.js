@@ -1,42 +1,37 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { addUser, findByEmail, findByAuth0Id } = require("../repository/user.repository.js");
+const { addUser, findByEmail } = require("../repository/user.repository.js");
 
-const SignupService = async ({ name, email, password, sub }) => {
-  // Check by email for email/password auth, or by Auth0Id for Auth0 auth
-  let isExist;
-  if (sub) {
-    isExist = await findByAuth0Id(sub);
-  } else if (email) {
-    isExist = await findByEmail(email);
+const SignupService = async ({ name, email, password }) => {
+  // Validate required fields
+  if (!name || !email || !password) {
+    throw new Error("Name, email, and password are required");
   }
 
-  if (isExist) {
-    throw new Error("User already exist");
+  // Check if user already exists
+  const existingUser = await findByEmail(email);
+  if (existingUser) {
+    throw new Error("User already exists with this email");
   }
 
-  if (!name || !email) {
-    throw new Error("Name and email are required");
-  }
+  // Hash password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
 
-  let newUser = {
-    name: name,
-    email: email,
+  // Create new user
+  const newUser = await addUser({
+    name,
+    email,
+    password: hashedPassword,
     courses: [],
-  };
+  });
 
-  // If password is provided, hash it (email/password auth)
-  if (password) {
-    const salt = await bcrypt.genSalt(10);
-    newUser.password = await bcrypt.hash(password, salt);
-  }
-
-  // If Auth0 ID is provided, store it
-  if (sub) {
-    newUser.auth0Id = sub;
-  }
-
-  newUser = await addUser(newUser);
+  // Generate JWT token
+  const token = jwt.sign(
+    { userId: newUser._id, email: newUser.email },
+    process.env.JWT_SECRET || "your-secret-key",
+    { expiresIn: "7d" }
+  );
 
   return {
     user: {
@@ -44,29 +39,31 @@ const SignupService = async ({ name, email, password, sub }) => {
       email: newUser.email,
       name: newUser.name,
     },
+    token,
   };
 };
 
-
-
-const LoginService = async ({ email, password, sub }) => {
-  let user;
-
-  // If Auth0 login
-  if (sub) {
-    user = await findByAuth0Id(sub);
-    if (!user) throw new Error("Invalid credential");
-  } 
-  // If email/password login
-  else if (email && password) {
-    user = await findByEmail(email);
-    if (!user) throw new Error("Invalid credential");
-
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) throw new Error("Invalid credential");
-  } else {
+const LoginService = async ({ email, password }) => {
+  // Validate required fields
+  if (!email || !password) {
     throw new Error("Email and password are required");
+  }
+
+  // Find user by email
+  const user = await findByEmail(email);
+  if (!user) {
+    throw new Error("Invalid email or password");
+  }
+
+  // Check if user has password (in case they're old Auth0 users without password)
+  if (!user.password) {
+    throw new Error("This account uses Auth0 authentication. Please use Auth0 to login.");
+  }
+
+  // Verify password
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    throw new Error("Invalid email or password");
   }
 
   // Generate JWT token

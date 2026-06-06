@@ -1,25 +1,27 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useContext } from "react";
+import { AuthContext } from "./context/AuthContext";
 import Home from "./pages/Home";
 import Course from "./pages/Course";
-
-import LoginRedirect from "./pages/LoginRedirect";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import ProtectedRoute from "./components/ProtectedRoute";
 import CourseResolver from "./pages/CourseResolve";
 import CourseOverview from "./pages/CourseOverview";
 
 function App() {
-  const { isAuthenticated, isLoading } = useAuth0();
+  const { isAuthenticated, loading } = useContext(AuthContext);
 
-  if (isLoading) return <h2>Loading...</h2>;
+  if (loading) return <h2>Loading...</h2>;
 
   return (
     <Routes>
       <Route
         path="/"
-        element={<Navigate to={isAuthenticated ? "/home" : "/login"} />}
+        element={<Navigate to={isAuthenticated ? "/home" : "/login"} replace />}
       />
-      <Route path="/login" element={<LoginRedirect />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
       <Route
         path="/home"
         element={

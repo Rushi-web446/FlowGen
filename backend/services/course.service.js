@@ -123,14 +123,34 @@ const saveCourseOutlineToDBService = async (
         isGenerated: "PENDING",
       }));
 
+      let createdLessons = [];
       if (lessonDocuments.length > 0) {
-        await Lesson.insertMany(lessonDocuments, { session });
+        createdLessons = await Lesson.insertMany(lessonDocuments, { session });
       }
+
+      // Add lesson IDs to module.lessons
+      createdModule.lessons = createdLessons.map(l => l._id);
+      await createdModule.save({ session });
+
+      // Add module ID to course.modules
+      createdCourse.modules.push(createdModule._id);
     }
+
+    // Save course with modules
+    await createdCourse.save({ session });
 
     await session.commitTransaction();
 
-    return createdCourse;
+    // Fetch the full course with populated modules/lessons to return
+    const fullCourse = await Course.findById(createdCourse._id)
+      .populate({
+        path: "modules",
+        populate: { path: "lessons" },
+      })
+      .session(session)
+      .lean();
+
+    return fullCourse;
   } catch (error) {
     await session.abortTransaction();
 
@@ -138,8 +158,6 @@ const saveCourseOutlineToDBService = async (
   } finally {
     session.endSession();
   }
-
-  return createdCourse;
 };
 
 const getRecentCoursesService = async (userId) => {
@@ -163,7 +181,7 @@ const getUserCourseService = async (userId) => {
     throw new Error("User ID is required");
   }
 
-  const courses = await findRecentCoursesByUser(userId, 7);
+  const courses = await findRecentCoursesByUser(userId, 100); // Get up to 100 courses
 
   return courses.map((course) => ({
     courseId: course._id,
@@ -244,9 +262,9 @@ const generateCourseFlow = async (prompt, res, userId) => {
 
     stream(res, "🔎 Searching for similar existing courses...");
 
-    const similar = await searchVectorDB(embedding, intent);
+    const similar = await searchVectorDB(embedding);
 
-    if (similar && similar.score > 0.85 && similar._id) {
+    if (similar && similar.score > 0.9 && similar._id) {
       console.log(
         `✅ Found existing course with ${(similar.score * 100).toFixed(1)}% similarity`,
       );
@@ -257,7 +275,8 @@ const generateCourseFlow = async (prompt, res, userId) => {
       );
 
       // Get the full course with modules/lessons populated
-      return sendCourse(res, similar);
+      const fullSimilarCourse = await findCourseById(similar._id);
+      return sendCourse(res, fullSimilarCourse);
     }
 
     console.log(
@@ -277,7 +296,7 @@ const generateCourseFlow = async (prompt, res, userId) => {
 
     stream(res, "✅ Course generated successfully!");
 
-    const savedCourse = saveCourseOutlineToDBService(
+    const savedCourse = await saveCourseOutlineToDBService(
       course,
       userId,
       intent,
@@ -520,7 +539,6 @@ const lessonGenerationFlow = async (lessonId, res) => {
       genLesson.youtubeQuery?.query || lesson.title
     );
 
-    console.log(`\n\n\n printing videos : ${JSON.stringify(videos)} \n\n\n`);
 
     // Prepare final lesson object
     const finalLesson = {

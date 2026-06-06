@@ -1,10 +1,11 @@
-import { useAuth0 } from "@auth0/auth0-react";
+import { useContext } from "react";
 import { Navigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth0();
+  const { isAuthenticated, loading } = useContext(AuthContext);
 
-  if (isLoading) {
+  if (loading) {
     return <h2>Loading...</h2>;
   }
 

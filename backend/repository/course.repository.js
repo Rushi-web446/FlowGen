@@ -12,7 +12,7 @@ const findCourseById = async (courseId) => {
     .lean();
 };
 
-const getModule = async (moduleId) => {
+const getModule = async (courseId, moduleId) => {
   return await Module.findOne({
     _id: moduleId,
     course: courseId,

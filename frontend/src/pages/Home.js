@@ -1,51 +1,40 @@
-import { useAuth0 } from "@auth0/auth0-react";
-import { useState, useEffect } from "react";
+import { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { useAuthSync } from "../hooks/useAuthSync";
+import { AuthContext } from "../context/AuthContext";
 import { useRecentCourses } from "../hooks/useRecentCourses";
-import { useCourseGeneration } from "../hooks/useCourseGeneration";
-import { useJobProgress } from "../hooks/useJobProgress";
+import { useCourseGenerationSSE } from "../hooks/useCourseGenerationSSE";
 import HomeSidebar from "../components/layout/HomeSidebar";
 import ProfessionalFooter from "../components/layout/ProfessionalFooter";
-import CourseGenerationProgress from "../components/CourseGenerationProgress";
 import NewCourseCard from "../components/NewCourseCard";
 import "./Home.css";
 
 const Home = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
+  const { user, token } = useContext(AuthContext);
 
   const [prompt, setPrompt] = useState("");
-  const [refreshKey, setRefreshKey] = useState(0); // ✅ FIXED
-  const [waiting, setWaiting] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [newCourseData, setNewCourseData] = useState(null);
-
-  const userReady = useAuthSync(
-    isAuthenticated,
-    getAccessTokenSilently,
-    user
-  );
+  const [progressEvents, setProgressEvents] = useState([]);
+  const [generationComplete, setGenerationComplete] = useState(false);
 
   const { courses, loading: coursesLoading } = useRecentCourses(
-    isAuthenticated,
-    userReady,
-    getAccessTokenSilently,
+    !!token,
+    token,
     refreshKey
   );
 
-  const { generateCourse, loading, error } = useCourseGeneration(
-    getAccessTokenSilently
-  );
-
   const {
-    newCourse,
-    progressState,
-    isPolling,
-    startPolling,
-    resetProgress,
-  } = useJobProgress(getAccessTokenSilently);
+    generateCourseWithSSE,
+    loading,
+    error,
+    events,
+  } = useCourseGenerationSSE();
+
+  // Track progress events
+  useEffect(() => {
+    setProgressEvents(events);
+  }, [events]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,35 +45,24 @@ const Home = () => {
     }
 
     try {
-      setNewCourseData(null);
-      resetProgress();
-      setWaiting(true);
+      setProgressEvents([]);
+      setGenerationComplete(false);
 
-      // Snapshot existing course IDs BEFORE generation starts.
-      // Works when courses = [] (Set will be empty) and when courses.length > 0.
-      // useJobProgress will detect any courseId NOT in this snapshot as the new course.
-      const existingCourseIds = new Set(courses.map((c) => c.courseId));
-
-      await generateCourse(prompt);
+      const courseData = await generateCourseWithSSE(prompt);
       setPrompt("");
+      setGenerationComplete(true);
 
-      startPolling(existingCourseIds);
+      // Refresh course list
+      setRefreshKey((prev) => prev + 1);
+
+      // Navigate to course overview page
+      if (courseData && courseData._id) {
+        navigate(`/course/${courseData._id}`);
+      }
     } catch (err) {
       console.warn("Course generation failed:", err);
-      setWaiting(false);
     }
   };
-
-  // ✅ CRITICAL FIX — works even when user had 0 courses
-  useEffect(() => {
-    if (newCourse) {
-      setNewCourseData(newCourse);
-      setWaiting(false);
-
-      // Force re-fetch recent courses
-      setRefreshKey((prev) => prev + 1);
-    }
-  }, [newCourse]);
 
   return (
     <>
@@ -93,7 +71,6 @@ const Home = () => {
         onClose={() => setSidebarOpen(false)}
         loading={coursesLoading}
         recentCourses={courses}
-        getAccessTokenSilently={getAccessTokenSilently}
       />
 
       <div className="home-container">
@@ -123,18 +100,18 @@ const Home = () => {
               placeholder="Describe what you want to learn... (at least 5 words)"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              disabled={isPolling || waiting}
+              disabled={loading}
             />
 
             <button
               type="submit"
               className="submit-btn"
-              disabled={loading || waiting || isPolling}
+              disabled={loading}
             >
-              {isPolling
+              {loading
                 ? "Generating Course..."
-                : loading || waiting
-                  ? "Creating..."
+                : generationComplete
+                  ? "Navigating..."
                   : "Generate Course"}
             </button>
           </form>
@@ -143,10 +120,14 @@ const Home = () => {
             <div className="error-message">⚠️ {error}</div>
           )}
 
-          {isPolling && (
-            <CourseGenerationProgress
-              progressState={progressState}
-            />
+          {loading && progressEvents.length > 0 && (
+            <div className="progress-events">
+              {progressEvents.map((event, idx) => (
+                <div key={idx} className="progress-event">
+                  {event.message || "Processing..."}
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
@@ -154,7 +135,7 @@ const Home = () => {
         <div className="my-courses-section">
           <h2 className="section-title">My Courses</h2>
 
-          {coursesLoading && !newCourseData && (
+          {coursesLoading && (
             <div className="loading-state">
               <div className="skeleton-loader"></div>
               <div className="skeleton-loader"></div>
@@ -162,47 +143,37 @@ const Home = () => {
             </div>
           )}
 
-          {!coursesLoading &&
-            courses.length === 0 &&
-            !newCourseData && (
-              <div className="empty-state">
-                <div className="empty-state-icon">📚</div>
-                <p className="empty-state-text">
-                  No courses yet. Create your first course
-                  above!
-                </p>
-              </div>
-            )}
+          {!coursesLoading && courses.length === 0 && (
+            <div className="empty-state">
+              <div className="empty-state-icon">📚</div>
+              <p className="empty-state-text">
+                No courses yet. Create your first course above!
+              </p>
+            </div>
+          )}
 
-          {(courses.length > 0 || newCourseData) && (
+          {courses.length > 0 && (
             <div className="courses-grid">
-              {newCourseData && (
-                <NewCourseCard
-                  course={newCourseData}
-                  onNavigate={(course) =>
-                    navigate(`/course/${course.courseId}`)
+              {courses.map((course) => (
+                <div
+                  key={course.courseId}
+                  className="course-card"
+                  onClick={() =>
+                    navigate(
+                      `/course/${course.courseId}`
+                    )
                   }
-                />
-              )}
-
-              {courses
-                .filter((course) => course.courseId !== newCourseData?.courseId)
-                .map((course) => (
-                  <div
-                    key={course.courseId}
-                    className="course-card"
-                    onClick={() =>
-                      navigate(`/course/${course.courseId}`)
+                >
+                  <NewCourseCard
+                    course={course}
+                    onNavigate={() =>
+                      navigate(
+                        `/course/${course.courseId}`
+                      )
                     }
-                  >
-                    <h3 className="course-card-title">
-                      {course.courseTitle}
-                    </h3>
-                    <p className="course-card-description">
-                      {course.courseDescription}
-                    </p>
-                  </div>
-                ))}
+                  />
+                </div>
+              ))}
             </div>
           )}
         </div>

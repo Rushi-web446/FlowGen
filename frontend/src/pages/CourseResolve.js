@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
+import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios";
 import LessonTransition from "../components/lesson/LessonTransition";
 
@@ -8,23 +8,15 @@ const CourseResolver = () => {
 
   const { courseId } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, getAccessTokenSilently } = useAuth0();
+  const { isAuthenticated } = useContext(AuthContext);
 
   useEffect(() => {
     if (!isAuthenticated || !courseId) return;
 
     const resolveCourse = async () => {
       try {
-        const token = await getAccessTokenSilently();
-
-        const res = await api.get(
-          `/course/resolve/${courseId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        // axios interceptor will automatically add JWT token
+        const res = await api.get(`/course/resolve/${courseId}`);
 
         const { moduleIndex, lessonIndex } = res.data;
 
@@ -38,7 +30,7 @@ const CourseResolver = () => {
     };
 
     resolveCourse();
-  }, [courseId, isAuthenticated, getAccessTokenSilently, navigate]);
+  }, [courseId, isAuthenticated, navigate]);
 
   return <LessonTransition />;
 };

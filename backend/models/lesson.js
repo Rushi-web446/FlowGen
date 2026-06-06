@@ -53,6 +53,11 @@ const lessonSchema = new mongoose.Schema(
       default: "PENDING",
     },
 
+    isCompleted: {
+      type: Boolean,
+      default: false,
+    },
+
     module: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Module",

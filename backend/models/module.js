@@ -17,6 +17,13 @@ const moduleSchema = new mongoose.Schema(
       required: true,
     },
 
+    lessons: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Lesson"
+      }
+    ],
+
     course: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Course",

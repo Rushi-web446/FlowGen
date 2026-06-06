@@ -51,6 +51,15 @@
     backdrop-filter: blur(25px);
 }
 
+.roadmap-full-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+    border: none;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(25px);
+}
+
 /* Header */
 .roadmap-header {
     display: flex;

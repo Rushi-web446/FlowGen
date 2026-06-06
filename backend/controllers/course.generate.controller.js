@@ -25,7 +25,6 @@ const { getLesson } = require("../repository/course.repository");
 const generateTopicAndDesciption = async (req, res) => {
   try {
     const prompt = req.body.prompt;
-    console.log(`\n\n from controller printing user_prompt : \n {prompt} \n\n\n`);
     const data = await generateTopicAndDesciptionService({ prompt });
     return res.status(201).json({
       message: "course topic and descrptio generated Successfully",

@@ -13,7 +13,12 @@ const courseSchema = new mongoose.Schema(
       required: true,
     },
 
-
+    modules: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Module"
+      }
+    ],
 
     userId: {
       type: mongoose.Schema.Types.ObjectId,

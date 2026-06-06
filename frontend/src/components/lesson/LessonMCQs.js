@@ -28,7 +28,7 @@ const MCQItem = ({ index, question }) => {
     setShowResult(false);
   };
 
-  const isCorrect = selectedOption === question.answerIndex;
+  const isCorrect = selectedOption === question.correctIndex;
 
   return (
     <div className="lesson-mcq-item">
@@ -39,8 +39,8 @@ const MCQItem = ({ index, question }) => {
           <li
             key={i}
             className={`lesson-mcq-option ${selectedOption === i ? "selected" : ""
-              } ${showResult && i === question.answerIndex ? "correct" : ""
-              } ${showResult && selectedOption === i && i !== question.answerIndex ? "incorrect" : ""
+              } ${showResult && i === question.correctIndex ? "correct" : ""
+              } ${showResult && selectedOption === i && i !== question.correctIndex ? "incorrect" : ""
               }`}
             onClick={() => !showResult && setSelectedOption(i)}
           >

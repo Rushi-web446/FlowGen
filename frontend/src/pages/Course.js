@@ -1,6 +1,5 @@
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
-import { useRef, useState, useEffect } from "react";
+import { useContext, useRef, useState, useEffect } from "react";
 import html2pdf from "html2pdf.js";
 
 import LessonPDF from "../components/lesson/LessonPDF";
@@ -13,12 +12,13 @@ import ProfessionalFooter from "../components/layout/ProfessionalFooter";
 
 import useFetchLesson from "../hooks/useFetchLesson";
 import api from "../api/axios";
+import { AuthContext } from "../context/AuthContext";
 
 const Course = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { courseId, moduleIndex, lessonIndex } = useParams();
-  const { getAccessTokenSilently, isAuthenticated } = useAuth0();
+  const { isAuthenticated } = useContext(AuthContext);
 
   const pdfRef = useRef(null);
   const [roadmapOpen, setRoadmapOpen] = useState(false);
@@ -48,10 +48,8 @@ const Course = () => {
     const fetchCourseStructure = async () => {
       if (!isAuthenticated || !courseId) return;
       try {
-        const token = await getAccessTokenSilently();
-        const res = await api.get(`/course/details/${courseId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // Axios interceptor adds Authorization header automatically
+        const res = await api.get(`/course/details/${courseId}`);
         setCourseData(res.data.course);
       } catch (err) {
         console.error("Failed to fetch course structure:", err);
@@ -59,7 +57,7 @@ const Course = () => {
     };
 
     fetchCourseStructure();
-  }, [courseId, isAuthenticated, getAccessTokenSilently]);
+  }, [courseId, isAuthenticated]);
 
   const downloadPDF = () => {
     if (!lesson) return;

@@ -1,10 +1,9 @@
 const User = require("../models/user");
 
 const syncUser = async (req, res, next) => {
-  console.log("\n\n reaching syncUser middleware \n\n");
   
   try {
-    // Handle local JWT tokens
+    // Handle custom JWT tokens
     if (req.user && req.user.userId) {
       const user = await User.findById(req.user.userId);
       if (!user) {
@@ -14,56 +13,9 @@ const syncUser = async (req, res, next) => {
       return next();
     }
 
-    // Handle Auth0 tokens (for future Auth0 support)
-    if (!req.auth || !req.auth.sub) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    const auth0Id = req.auth.sub;
-    const namespace = "https://text-to-learn-api/";
-
-    const email =
-      req.auth[`${namespace}email`] || req.auth.email;
-
-    const name =
-      req.auth[`${namespace}name`] ||
-      req.auth.name ||
-      (email ? email.split("@")[0] : "User");
-
-    if (!email) {
-      return res.status(400).json({
-        message: "Email missing in token. Check Auth0 post-login action.",
-      });
-    }
-
-    const user = await User.findOneAndUpdate(
-      { auth0Id },
-      {
-        $setOnInsert: {
-          auth0Id,
-          email,
-          name,
-        },
-        $set: {
-          lastLogin: new Date(),
-        },
-      },
-      {
-        new: true,
-        upsert: true,
-        runValidators: true,
-      }
-    );
-
-    req.appUser = user;
-    next();
+    return res.status(401).json({ message: "Unauthorized: No valid user found" });
   } catch (error) {
-    if (error.code === 11000) {
-      return res
-        .status(409)
-        .json({ message: "Duplicate email detected" });
-    }
-
+    console.error("User sync error:", error);
     return res.status(500).json({ message: "User sync failed" });
   }
 };

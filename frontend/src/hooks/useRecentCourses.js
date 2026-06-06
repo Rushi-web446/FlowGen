@@ -3,25 +3,20 @@ import api from "../api/axios";
 
 export const useRecentCourses = (
   isAuthenticated,
-  userReady,
-  getAccessTokenSilently,
+  token,
   refreshKey 
 ) => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
+  
   useEffect(() => {
-    if (!isAuthenticated || !userReady) return;
+    if (!isAuthenticated || !token) return;
     
     const loadCourses = async () => {
       try {
         setLoading(true);
-        const token = await getAccessTokenSilently();
-        
-        const res = await api.get("/course/recent", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        // axios interceptor will automatically add JWT token from localStorage
+        const res = await api.get("/course/course");
         setCourses(res.data.courses || []);
       } catch (err) {
         console.error("Failed to load courses:", err);
@@ -32,12 +27,8 @@ export const useRecentCourses = (
     };
 
     loadCourses();
-  }, [
-    isAuthenticated,
-    userReady,
-    getAccessTokenSilently,
-    refreshKey 
-  ]);
+  }, [isAuthenticated, token, refreshKey]);
 
   return { courses, loading };
 };
+

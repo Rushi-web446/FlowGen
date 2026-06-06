@@ -356,7 +356,6 @@ const generateTextFromLLM = async ({ prompt, maxTokens }) => {
 
 
 const generateTopicAndDesciptionService = async ({ prompt }) => {
-  console.log(`\n\n from service printing user_prompt : \n ${prompt} \n\n\n`);
   // Wait—generateTopicAndDesciption probably should use intent generation? Let's just keep it as is for now but fix the call!
   return await generateJsonFromLLM(
     intent_generation_system_prompt,
@@ -425,7 +424,6 @@ Generate now.
   `;
 
 
-      console.log(`\n\n\n\n\n\n\n  printing actual user prompt : \n\n\n\n  ${lesson_generation_user_prompt}\n\n\n`);
 
 
   return generateJsonFromLLM(lesson_generation_system_prompt, lesson_generation_user_prompt, 3000);

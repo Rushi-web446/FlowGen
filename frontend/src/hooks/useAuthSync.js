@@ -1,35 +1,38 @@
 import { useEffect, useState } from "react";
-import api from "../api/axios";
 
+/**
+ * useAuthSync - Verifies Auth0 authentication is ready
+ * No longer calls backend endpoint (those require local JWT)
+ */
 export const useAuthSync = (isAuthenticated, getAccessTokenSilently) => {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      setReady(false);
+      return;
+    }
 
     let cancelled = false;
 
-    const syncUser = async () => {
+    const verifyAuth = async () => {
       try {
-        const token = await getAccessTokenSilently({
-          authorizationParams: {
-            audience: "https://text-to-learn-api",
-          },
-        });
+        // Just verify we can get an Auth0 token
+        await getAccessTokenSilently();
 
-        await api.get("/user/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!cancelled) setReady(true);
+        if (!cancelled) {
+          setReady(true);
+          console.log("✅ Auth0 verified");
+        }
       } catch (err) {
-        console.error("❌ Auth sync failed:", err);
+        console.error("❌ Auth0 verification failed:", err);
+        if (!cancelled) {
+          setReady(false);
+        }
       }
     };
 
-    syncUser();
+    verifyAuth();
 
     return () => {
       cancelled = true;

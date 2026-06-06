@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth0 } from '@auth0/auth0-react';
+import { AuthContext } from '../../context/AuthContext';
 import api from '../../api/axios';
 import './HomeSidebar.css';
 
-const HomeSidebar = ({ isOpen, onClose, recentCourses: initialCourses, loading, getAccessTokenSilently }) => {
+const HomeSidebar = ({ isOpen, onClose, recentCourses: initialCourses, loading }) => {
   const navigate = useNavigate();
-  const { logout } = useAuth0();
+  const { logout } = useContext(AuthContext);
   const [recentCourses, setRecentCourses] = useState(initialCourses || []);
   const [localLoading, setLocalLoading] = useState(false);
 
@@ -16,7 +16,8 @@ const HomeSidebar = ({ isOpen, onClose, recentCourses: initialCourses, loading, 
   };
 
   const handleLogout = () => {
-    logout({ logoutParams: { returnTo: window.location.origin } });
+    logout();
+    navigate("/login");
     onClose();
   };
 
@@ -32,10 +33,8 @@ const HomeSidebar = ({ isOpen, onClose, recentCourses: initialCourses, loading, 
 
       try {
         setLocalLoading(true);
-        const token = getAccessTokenSilently ? await getAccessTokenSilently() : null;
-        const res = await api.get('/course/course', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
-        });
+        // axios interceptor will automatically add JWT token
+        const res = await api.get('/course/course');
         if (mounted && res.data && res.data.courses) {
           setRecentCourses(res.data.courses);
         }
@@ -51,7 +50,7 @@ const HomeSidebar = ({ isOpen, onClose, recentCourses: initialCourses, loading, 
     return () => {
       mounted = false;
     };
-  }, [isOpen, getAccessTokenSilently, initialCourses]);
+  }, [isOpen, initialCourses]);
 
   return (
     <>
