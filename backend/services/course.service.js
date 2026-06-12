@@ -8,9 +8,10 @@ const {
   saveHinglishContent,
   searchVectorDB,
   getLesson,
+  updateLessonStatus,
 } = require("../repository/course.repository");
 
-const { addLessonToLazyLessonGenerationQueue } = require("../utils/helper");
+const { addLessonToGenerationQueue } = require("../utils/helper");
 
 const { getYouTubeVideos } = require("../repository/YouTube.repository");
 
@@ -306,7 +307,8 @@ const generateCourseFlow = async (prompt, res, userId) => {
 
     stream(res, "✅ Course saved successfully!");
 
-    // await addLessonToLazyLessonGenerationQueue(savedCourse._id);
+    // Lazy queue initialization: lessons are queued on-demand when user requests them
+    // No automatic queueing to prevent premature processing
 
     return sendCourse(res, savedCourse);
 
@@ -476,8 +478,6 @@ const lessonGenerationFlow = async (lessonId, res) => {
       return res.end();
     }
 
-
-
     stream(res, "🔍 Fetching lesson details...");
 
     // Fetch lesson from DB
@@ -485,8 +485,6 @@ const lessonGenerationFlow = async (lessonId, res) => {
     if (!lesson) {
       throw new Error("Lesson not found");
     }
-
-
 
     // Check if lesson already generated
     if (lesson.isGenerated === "GENERATED" && lesson.content) {
@@ -509,76 +507,73 @@ const lessonGenerationFlow = async (lessonId, res) => {
       return res.end();
     }
 
-
-
-    stream(res, "🤖 Generating lesson content...");
-
-    // Prepare lesson data for generation
-    const lessonData = {
-      title: lesson.title,
-      realWorldProblem: lesson.realWorldProblem,
-      learnerTakeaway: lesson.learnerTakeaway,
-      completionCriteria: lesson.completionCriteria,
-      briefDescription: lesson.briefDescription,
-    };
-
-
-
-    // Generate lesson content
-    const genLesson = await generateLessonService(lessonData);
-    if (!genLesson) {
-      throw new Error("Failed to generate lesson content");
+    // Check if lesson is already being generated or in queue
+    if (lesson.isGenerated === "GENERATING") {
+      stream(res, "⏳ Lesson is already being generated...");
+      return res.end();
     }
 
-
-
-    stream(res, "📹 Generating YouTube query and fetching videos...");
-
-    // Fetch YouTube videos
-    const videos = await getYouTubeVideosService(
-      genLesson.youtubeQuery?.query || lesson.title
-    );
-
-
-    // Prepare final lesson object
-    const finalLesson = {
-      content: genLesson.data || genLesson,
-      youtubeQuery: {
-        query: genLesson.youtubeQuery?.query || lesson.title,
-        videos: videos || [],
-      },
-      isGenerated: "GENERATED",
-    };
-
-    stream(res, "💾 Saving lesson to database...");
-
-    // Save lesson with content and videos
-    const savedLesson = await saveLessonService(
-      lesson.module,
-      lessonId,
-      finalLesson
-    );
-    if (!savedLesson) {
-      throw new Error("Failed to save lesson to database");
+    // Get courseId from lesson's module
+    const Module = require("../models/module");
+    const moduleData = await Module.findById(lesson.module);
+    if (!moduleData) {
+      throw new Error("Module not found");
     }
 
-    stream(
-      res,
-      "✅ Lesson generated and saved successfully!",
-      {
-        type: "SUCCESS",
-        lesson: {
-          _id: savedLesson._id,
-          title: savedLesson.title,
-          description: savedLesson.briefDescription,
-          content: savedLesson.content,
-          youtubeQuery: savedLesson.youtubeQuery,
-          isGenerated: savedLesson.isGenerated,
-        },
+    // Add lesson to generation queue (user explicitly requested it)
+    stream(res, "📋 Adding lesson to generation queue...");
+    await addLessonToGenerationQueue(
+      moduleData.course.toString(),
+      moduleData._id.toString(),
+      lessonId
+    );
+
+    // Keep connection open and poll until lesson is generated or timeout
+    stream(res, "⏳ Waiting for lesson generation to complete...");
+    
+    let pollingCount = 0;
+    const maxPollingCount = 60; // 60 seconds max
+    const pollIntervalMs = 1000; // Check every second
+
+    const pollForLesson = async () => {
+      while (pollingCount < maxPollingCount) {
+        const updatedLesson = await getLesson(lessonId);
+        
+        if (updatedLesson.isGenerated === "GENERATED" && updatedLesson.content) {
+          // Lesson completed successfully
+          stream(
+            res,
+            "✅ Lesson generated and saved successfully!",
+            {
+              type: "SUCCESS",
+              lesson: {
+                _id: updatedLesson._id,
+                title: updatedLesson.title,
+                description: updatedLesson.briefDescription,
+                content: updatedLesson.content,
+                youtubeQuery: updatedLesson.youtubeQuery,
+                isGenerated: updatedLesson.isGenerated,
+              },
+            }
+          );
+          return res.end();
+        }
+
+        if (updatedLesson.isGenerated === "FAILED") {
+          throw new Error("Lesson generation failed");
+        }
+
+        // Still waiting...
+        pollingCount++;
+        await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
       }
-    );
 
-    return res.end();
+      // Timeout
+      throw new Error("Lesson generation timed out. Please try again later.");
+    };
+
+    await pollForLesson();
+
   } catch (error) {
     console.error("❌ lessonGenerationFlow error:", error);
     res.write(

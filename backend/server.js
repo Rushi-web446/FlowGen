@@ -9,11 +9,12 @@ const syncUser = require('./middleware/user.sync.middleware');
 const userRoutes = require("./routes/user.route");
 const coursesRoute = require("./routes/course.route");
 const authRoutes = require("./routes/auth.route");
+const queueRoutes = require("./routes/queue.route");
 
-// // Start Workers
-// require("./workers/course.worker");
-// require("./workers/low.priority.lesson.worker");
-// require("./workers/high.priority.lesson.worker");
+// Start lesson generation worker
+if (process.env.START_WORKER !== "false") {
+  require("./workers/lesson.generation.worker");
+}
 
 
 
@@ -31,6 +32,7 @@ app.get("/", (req, res) => {
 app.use("/auth", authRoutes);
 app.use("/course", coursesRoute);
 app.use("/user", checkJwt, syncUser, userRoutes);
+app.use("/queue", checkJwt, queueRoutes);
 
 
 

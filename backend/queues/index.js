@@ -1,22 +1,27 @@
 const { Queue } = require("bullmq");
 const { redisConnection } = require("../redis/connection.js");
 
-const courseQueue = new Queue("COURSE_QUEUE", {
+// Lesson generation queue (on-demand)
+const lessonGenerationQueue = new Queue("LESSON_GENERATION_QUEUE", {
   connection: redisConnection,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: { type: "exponential", delay: 5000 },
+    removeOnComplete: { count: 100 },
+    removeOnFail: { count: 50 },
+  },
 });
 
-const lowPriorityLessonQueue = new Queue("LOW_PRIORITY_LESSON_QUEUE", {
+// Dead letter queue for failed jobs
+const lessonGenerationDeadLetterQueue = new Queue("LESSON_GENERATION_DLQ", {
   connection: redisConnection,
+  defaultJobOptions: {
+    removeOnComplete: false,
+    removeOnFail: false,
+  },
 });
-
-const highPriorityLessonQueue = new Queue("HIGH_PRIORITY_LESSON_QUEUE", {
-  connection: redisConnection,
-});
-
-
 
 module.exports = {
-  courseQueue,
-  lowPriorityLessonQueue,
-  highPriorityLessonQueue,
+  lessonGenerationQueue,
+  lessonGenerationDeadLetterQueue,
 };

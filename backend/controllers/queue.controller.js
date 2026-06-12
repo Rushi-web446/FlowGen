@@ -1,92 +1,111 @@
-const { courseQueue, highPriorityLessonQueue } = require("../queues");
-const { getOutlinePrompt } = require("../Prompts/helper.prompt");
 const {
-  getLesson,
-  updateLessonStatus,
-} = require("../repository/course.repository");
+  lessonGenerationQueue,
+  lessonGenerationDeadLetterQueue,
+} = require("../queues");
 
-const courseQueueController = async (req, res) => {
+/**
+ * Get queue statistics
+ */
+const getQueueStats = async (req, res) => {
   try {
-    const prompt = getOutlinePrompt(req.body);
+    const [waiting, active, completed, failed] = await Promise.all([
+      lessonGenerationQueue.getWaitingCount(),
+      lessonGenerationQueue.getActiveCount(),
+      lessonGenerationQueue.getCompletedCount(),
+      lessonGenerationQueue.getFailedCount(),
+    ]);
 
-    await courseQueue.add("GENERATE_COURSE_OUTLINE", {
-      prompt,
-      userId: req.appUser._id,
-    });
+    const dlqCount = await lessonGenerationDeadLetterQueue.getJobCounts();
 
-    return res.status(201).json({
-      message: "Course outline generation queued successfully",
+    res.json({
+      success: true,
+      stats: {
+        lessonGeneration: {
+          waiting,
+          active,
+          completed,
+          failed,
+        },
+        dlq: dlqCount,
+      },
     });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error("Failed to get queue stats:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
   }
 };
 
-
-
-const lessonQueueController = async (req, res) => {
+/**
+ * Reprocess a failed DLQ job
+ */
+const reprocessDlqJob = async (req, res) => {
   try {
-    const { courseId } = req.params;
-    const { moduleId, lessonId } = req.query;
-    const userId = req.appUser._id;
+    const { jobId } = req.params;
 
+    // Get job from DLQ
+    const dlqJobs = await lessonGenerationDeadLetterQueue.getJobs(["waiting"]);
+    const jobToReprocess = dlqJobs.find(j => j.id === jobId || j.data.prevJobId === jobId);
 
-
-
-    const lesson = await getLesson(moduleId, lessonId);
-
-    if (!lesson) {
-      return res.status(404).json({ error: "Lesson not found" });
-    }
-
-    if (lesson.isGenerated === "GENERATED") {
-      return res.json({
-        status: "READY",
-        lesson: {
-          ...lesson.content,
-          title: lesson.title,
-          description: lesson.briefDescription,
-          hinglishContent: lesson.hinglishContent,
-          lessonIndex: lesson.lessonIndex,
-          module: lesson.module,
-          _id: lesson._id,
-        },
+    if (!jobToReprocess) {
+      return res.status(404).json({
+        success: false,
+        error: "Job not found in DLQ",
       });
     }
 
-
-    if (lesson.isGenerated === "GENERATING") {
-      return res.status(202).json({
-        status: "GENERATING",
-      });
-    }
-
-    console.log("\n\n\n lessonQueueController \n\n\n", courseId, moduleId, lessonId, userId);
-
-    await updateLessonStatus(moduleId, lessonId, "GENERATING");
-
-    await highPriorityLessonQueue.add(
+    // Re-add to main queue
+    await lessonGenerationQueue.add(
       "GENERATE_LESSON",
-      { courseId, moduleId: moduleId, lessonId: lessonId, userId },
+      jobToReprocess.data,
       {
-        priority: 1,
-      },
+        jobId: `reprocessed-${Date.now()}-${jobId}`,
+        attempts: 3,
+        backoff: { type: "exponential", delay: 5000 },
+      }
     );
 
-    return res.status(202).json({
-      status: "GENERATING",
+    // Remove from DLQ
+    await jobToReprocess.remove();
+
+    res.json({
+      success: true,
+      message: "Job reprocessed successfully",
     });
+  } catch (error) {
+    console.error("Failed to reprocess DLQ job:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
 
+/**
+ * Clear all jobs from queue
+ */
+const clearQueue = async (req, res) => {
+  try {
+    await lessonGenerationQueue.drain();
+    await lessonGenerationQueue.obliterate({ force: true });
 
-  } catch (err) {
-    console.error("lessonQueueController error:", err);
-    return res.status(500).json({
-      error: "Failed to fetch lesson",
+    res.json({
+      success: true,
+      message: "Queue cleared successfully",
+    });
+  } catch (error) {
+    console.error("Failed to clear queue:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
     });
   }
 };
 
 module.exports = {
-  courseQueueController,
-  lessonQueueController,
+  getQueueStats,
+  reprocessDlqJob,
+  clearQueue,
 };

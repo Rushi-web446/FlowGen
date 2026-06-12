@@ -1,39 +1,41 @@
-const { lowPriorityLessonQueue } = require("../queues");
+const { lessonGenerationQueue } = require("../queues");
 const Module = require("../models/module");
+const Lesson = require("../models/lesson");
 
-const addLessonToLazyLessonGenerationQueue = async (courseId) => {
-
-  // Get all modules of this course
-  const modules = await Module.find({ course: courseId })
-    .select("_id lessons")
-    .lean();
-
+/**
+ * Add a single lesson to the generation queue
+ * @param {string} courseId 
+ * @param {string} moduleId 
+ * @param {string} lessonId 
+ */
+const addLessonToGenerationQueue = async (courseId, moduleId, lessonId) => {
+  // Task deduplication using jobId
+  const jobId = `lesson-gen-${lessonId}`;
+  
+  // Check if lesson already exists and is generated
+  const existingLesson = await Lesson.findById(lessonId).select("isGenerated");
+  if (existingLesson && existingLesson.isGenerated === "GENERATED") {
+    console.log(`[QUEUE] Lesson ${lessonId} already generated - skipping`);
     return;
-
-  for (const module of modules) {
-    for (const lessonId of module.lessons) {
-
-      await lowPriorityLessonQueue.add(
-        "GENERATE_LESSON",
-        {
-          courseId: courseId.toString(),
-          moduleId: module._id.toString(),
-          lessonId: lessonId.toString(),
-        },
-        {
-          priority: 5,
-          attempts: 3,
-          backoff: { type: "exponential", delay: 5000 },
-          removeOnComplete: true,
-        }
-      );
-    }
-    // INTENTIONAL: Only queue Module 1 lessons for background pre-generation.
-    // Queuing all modules at once hits GROQ free-tier rate limits.
-    // Remaining modules are generated on-demand via the high-priority worker
-    // when the user navigates to them.
-    break;
   }
+
+  // Add job to queue with deduplication
+  await lessonGenerationQueue.add(
+    "GENERATE_LESSON",
+    {
+      courseId: courseId.toString(),
+      moduleId: moduleId.toString(),
+      lessonId: lessonId.toString(),
+    },
+    {
+      jobId, // Deduplication key
+      priority: 10,
+      attempts: 3,
+      backoff: { type: "exponential", delay: 5000 },
+    }
+  );
+  
+  console.log(`[QUEUE] Added lesson ${lessonId} to generation queue`);
 };
 
-module.exports = { addLessonToLazyLessonGenerationQueue };
+module.exports = { addLessonToGenerationQueue };

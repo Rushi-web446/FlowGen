@@ -38,8 +38,6 @@ router.post("/generate/outline", checkJwt, syncUser, handleCourseGeneration);
 
 router.post("/save/outline", checkJwt, syncUser, saveCourseOutlineToDB);
 
-
-
 router.get("/recent", checkJwt, syncUser, getRecentCourses); // users top 3 recent access course
 
 router.get("/course", checkJwt, syncUser, getUserCourse); //  user's course history
@@ -47,11 +45,6 @@ router.get("/course", checkJwt, syncUser, getUserCourse); //  user's course hist
 
 
 router.get("/details/:id", checkJwt, syncUser, getCourseDetails); // course detailes for showing roadmap 
-
-
-// generating or fetching lesson
-// router.get("/get/lesson/:courseId", checkJwt, syncUser, lessonQueueController);
-
 
 
 

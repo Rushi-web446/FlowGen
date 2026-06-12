@@ -29,12 +29,9 @@ const getLesson = async (lessonId) => {
 
 
 
-const updateLessonStatus = async (moduleId, lessonId, status) => {
+const updateLessonStatus = async (lessonId, status) => {
   return await Lesson.findOneAndUpdate(
-    {
-      _id: lessonId,
-      module: moduleId,
-    },
+    { _id: lessonId },
     { isGenerated: status },
     { new: true },
   );
