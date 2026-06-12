@@ -5,7 +5,15 @@
 
 ---
 
-## � Table of Contents
+# 📐 Project Structure & System Architecture
+
+<p align="center">
+  <img src="./FlowGen%20Screen.jpeg" alt="FlowGen system diagram" width="800"/>
+</p>
+
+---
+
+## 📑 Table of Contents
 - [Project Overview & RAG Implementation](#-project-overview--rag-implementation)
 - [Problem Statement](#-problem-statement)
 - [FlowGen Solution](#-flowgen-solution)
