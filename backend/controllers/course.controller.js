@@ -183,11 +183,13 @@ const getCourseDetails = async (req, res) => {
 
 const completeLesson = async (req, res) => {
   try {
-    const { moduleId, lessonId } = req.body;
+    const { moduleId, lessonId, quizScore } = req.body;
 
     const result = await completeLessonService({
       moduleId,
       lessonId,
+      userId: req.appUser._id,
+      quizScore,
     });
 
     return res.status(200).json({
@@ -219,6 +221,7 @@ const getCurrentLessonContent = async (req, res) => {
     const data = await getLessonContentService({
       moduleId: targetModuleId,
       lessonId: targetLessonId,
+      userId: req.appUser._id,
     });
 
     return res.status(200).json({
@@ -269,6 +272,7 @@ const checkLessonExists = async (req, res) => {
     const result = await checkLessonExistsService({
       moduleId: targetModuleId,
       lessonId: targetLessonId,
+      userId: req.appUser._id,
     });
 
     return res.status(200).json({
@@ -294,11 +298,7 @@ const saveLesson = async (req, res) => {
       });
     }
 
-    const saved = await saveLessonService({
-      moduleId,
-      lessonId,
-      lesson,
-    });
+    const saved = await saveLessonService(moduleId, lessonId, lesson, req.appUser._id);
 
     return res.status(200).json({
       success: true,
@@ -323,62 +323,16 @@ const resolveNextLesson = async (req, res) => {
       return res.status(400).json({ message: "Course ID is required" });
     }
 
-    const courseDetails = await getCourseDetailsWithProgressService(
-      courseId,
-      userId,
-    );
+    const courseDetails = await getCourseDetailsWithProgressService(courseId, userId);
 
     if (!courseDetails || !courseDetails.progress) {
       return res.status(404).json({ message: "Course progress not found" });
     }
 
-    const { currentModule, currentLesson } = courseDetails.progress;
-
-    let lessonExistsResult = await checkLessonExistsService({
-      courseId,
-      userId,
-      moduleIndex: currentModule,
-      lessonIndex: currentLesson,
-    });
-
-    if (!lessonExistsResult.exists) {
-      console.log(
-        `Generating lesson for Course: ${courseId}, Module: ${currentModule}, Lesson: ${currentLesson}`,
-      );
-
-      const lessonPrompt = await getLessonPrompt(
-        courseId,
-        Number(currentModule),
-        Number(currentLesson),
-      );
-
-      if (!lessonPrompt) {
-        return res
-          .status(404)
-          .json({ message: "Failed to generate lesson prompt" });
-      }
-
-      const generatedData = await generateLessonService(lessonPrompt);
-
-      if (!generatedData) {
-        return res
-          .status(500)
-          .json({ message: "Failed to generate lesson content" });
-      }
-
-      await saveLessonService({
-        courseId,
-        userId,
-        moduleIndex: Number(currentModule),
-        lessonIndex: Number(currentLesson),
-        lesson: generatedData,
-      });
-    }
-
     return res.status(200).json({
       courseId,
-      moduleIndex: currentModule,
-      lessonIndex: currentLesson,
+      moduleIndex: courseDetails.progress.currentModule,
+      lessonIndex: courseDetails.progress.currentLesson,
     });
   } catch (error) {
     console.error("resolveNextLesson error:", error);
@@ -397,6 +351,7 @@ const getLessonDetails = async (req, res) => {
     const lessonData = await getLessonContentService({
       moduleId,
       lessonId,
+      userId: req.appUser._id,
     });
 
     if (!lessonData || !lessonData.lesson) {

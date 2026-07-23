@@ -6,7 +6,12 @@ const LessonResources = ({ resources }) => {
     <Section title="Suggested Resources">
       <ul>
         {resources.map((r, idx) => (
-          <li key={idx}>{r}</li>
+          <li key={idx}>
+            {r.url ? (
+              <a href={r.url} target="_blank" rel="noreferrer">{r.title}</a>
+            ) : r.title || r}
+            {r.type && ` · ${r.type}`}
+          </li>
         ))}
       </ul>
     </Section>

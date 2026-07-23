@@ -30,7 +30,7 @@ http://localhost:3001/course/generate/outline
 {
     "topicName": "Dynamic Programming",
     "description": "Learn Dynamic Programming in 30 days"
-}
+}                   
 
 Save Course Outline : 
 http://localhost:3001/course/save/outline

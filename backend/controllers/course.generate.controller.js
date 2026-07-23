@@ -15,7 +15,9 @@ const {
   getYouTubeQueryPrompt,
 } = require("../Prompts/helper.prompt");
 
-const { getLesson } = require("../repository/course.repository");
+const { getLesson, findLessonForUser } = require("../repository/course.repository");
+const { enqueueLessonGeneration } = require("../services/job.service");
+const Module = require("../models/module");
 
 
 
@@ -69,14 +71,14 @@ const generateLesson = async (req, res) => {
       });
     }
 
-    // Setup SSE headers
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-
-
-    // Call lessonGenerationFlow with SSE response
-    return await lessonGenerationFlow(lessonId, res);
+    const lesson = await findLessonForUser({ lessonId, userId: req.appUser._id });
+    if (!lesson) return res.status(404).json({ message: "Lesson not found" });
+    const module = await Module.findById(lesson.module).select("course").lean();
+    const { job, reused } = await enqueueLessonGeneration({
+      courseId: module.course.toString(), moduleId: lesson.module.toString(), lessonId,
+      idempotencyKey: req.get("Idempotency-Key"),
+    });
+    return res.status(reused ? 200 : 202).json({ jobId: job.id, reused, statusUrl: `/course/jobs/${job.id}` });
 
   } catch (error) {
     console.error("Error in generateLesson:", error);

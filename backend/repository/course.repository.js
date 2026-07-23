@@ -12,6 +12,15 @@ const findCourseById = async (courseId) => {
     .lean();
 };
 
+const findCourseForUser = async (courseId, userId) => {
+  return await Course.findOne({ _id: courseId, userId })
+    .populate({
+      path: "modules",
+      populate: { path: "lessons" },
+    })
+    .lean();
+};
+
 const getModule = async (courseId, moduleId) => {
   return await Module.findOne({
     _id: moduleId,
@@ -156,6 +165,7 @@ const searchVectorDB = async (embedding) => {
           title: 1,
           description: 1,
           learningIntent: 1,
+          userId: 1,
           score: {
             $meta: "vectorSearchScore",
           },
@@ -179,11 +189,42 @@ const searchVectorDB = async (embedding) => {
 
 
 
-const findLessonForUser = async ({ moduleId, lessonId }) => {
-  return await Lesson.findOne({
+const findLessonForUser = async ({ moduleId, lessonId, userId }) => {
+  const lesson = await Lesson.findOne({
     _id: lessonId,
     module: moduleId,
   }).lean();
+
+  if (!lesson || !userId) return lesson;
+
+  const module = await Module.findById(moduleId).select("course").lean();
+  if (!module) return null;
+
+  const courseExists = await Course.exists({ _id: module.course, userId });
+  return courseExists ? lesson : null;
+};
+
+const claimLessonGeneration = async (lessonId) => {
+  return await Lesson.findOneAndUpdate(
+    { _id: lessonId, isGenerated: { $in: ["PENDING", "FAILED", "GENERATING"] } },
+    { isGenerated: "GENERATING" },
+    { new: true },
+  );
+};
+
+const completeLessonForUser = async ({ moduleId, lessonId, userId, quizScore }) => {
+  const lesson = await findLessonForUser({ moduleId, lessonId, userId });
+  if (!lesson) return null;
+
+  return await Lesson.findOneAndUpdate(
+    { _id: lessonId, module: moduleId },
+    {
+      isCompleted: true,
+      completedAt: new Date(),
+      ...(Number.isFinite(quizScore) ? { quizScore } : {}),
+    },
+    { new: true },
+  );
 };
 
 
@@ -209,6 +250,7 @@ const saveLesson = async (moduleId, lessonId, lessonObj) => {
   if (lessonObj.title !== undefined) lesson.title = lessonObj.title;
   if (lessonObj.content !== undefined) lesson.content = lessonObj.content;
   if (lessonObj.youtubeQuery !== undefined) lesson.youtubeQuery = lessonObj.youtubeQuery;
+  if (lessonObj.retrievalCitations !== undefined) lesson.retrievalCitations = lessonObj.retrievalCitations;
 
   if (lessonObj.content) lesson.isGenerated = "GENERATED";
 
@@ -240,14 +282,17 @@ const wrappedGetLesson = async (lid) => {
 module.exports = {
   // Export the wrapped versions as the public API
   findById: wrappedFindById,
+  findCourseForUser,
   getModule: wrappedGetModule,
   getLesson: wrappedGetLesson,
   saveCourseOutlineToDB,
   findRecentCoursesByUser,
   findLessonForUser,
+  completeLessonForUser,
   checkLessonExistsForUser,
   saveLesson,
   updateLessonStatus,
+  claimLessonGeneration,
   saveHinglishContent,
   searchVectorDB
 };

@@ -1,25 +1,40 @@
 import Section from "./Section";
 import { useState } from "react";
 
-const LessonMCQs = ({ mcqs }) => {
+const LessonMCQs = ({ mcqs, onScoreChange }) => {
+  const [, setResults] = useState({});
+
   if (!mcqs || mcqs.length === 0) return null;
+
+  const handleResult = (index, isCorrect) => {
+    setResults((currentResults) => {
+      if (currentResults[index] !== undefined) return currentResults;
+      const nextResults = { ...currentResults, [index]: isCorrect };
+      if (Object.keys(nextResults).length === mcqs.length) {
+        const correctAnswers = Object.values(nextResults).filter(Boolean).length;
+        onScoreChange?.(Math.round((correctAnswers / mcqs.length) * 100));
+      }
+      return nextResults;
+    });
+  };
 
   return (
     <Section title="Check Your Understanding" id="mcqs">
       {mcqs.map((q, idx) => (
-        <MCQItem key={idx} index={idx} question={q} />
+        <MCQItem key={idx} index={idx} question={q} onResult={handleResult} />
       ))}
     </Section>
   );
 };
 
-const MCQItem = ({ index, question }) => {
+const MCQItem = ({ index, question, onResult }) => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showResult, setShowResult] = useState(false);
 
   const handleCheck = () => {
     if (selectedOption !== null) {
       setShowResult(true);
+      onResult(index, selectedOption === question.correctIndex);
     }
   };
 

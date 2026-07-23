@@ -36,7 +36,7 @@ const useGenerateLesson = (
         const baseURL = process.env.REACT_APP_API_URL || "http://localhost:3001";
         const url = `${baseURL}/course/generate/lesson`;
 
-        // Use fetch for SSE support
+        // Queue the work, then subscribe to progress on its own request.
         const response = await fetch(url, {
           method: "POST",
           headers: {
@@ -51,8 +51,13 @@ const useGenerateLesson = (
           throw new Error(errorData.message || `HTTP ${response.status}`);
         }
 
-        // Read SSE stream
-        const reader = response.body.getReader();
+        const queued = await response.json();
+        if (!queued.jobId) throw new Error("Generation job was not created");
+        const eventResponse = await fetch(`${baseURL}/course/jobs/${queued.jobId}/events`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!eventResponse.ok) throw new Error("Unable to subscribe to generation progress");
+        const reader = eventResponse.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
         let lessonData = null;
@@ -74,17 +79,10 @@ const useGenerateLesson = (
                 if (!cancelled) {
                   setEvents((prev) => [...prev, eventData]);
 
-                  // Extract lesson data from SUCCESS events
-                  if (eventData.type === "SUCCESS" && eventData.lesson) {
-                    console.log("useGenerateLesson - SUCCESS event received:", eventData);
-                    lessonData = eventData.lesson;
-                    console.log("useGenerateLesson - lessonData extracted:", lessonData);
-                  }
+                  if (eventData.state === "completed" && eventData.result?.lesson) lessonData = eventData.result.lesson;
 
                   // Handle errors
-                  if (eventData.type === "ERROR") {
-                    throw new Error(eventData.message || "Lesson generation failed");
-                  }
+                  if (eventData.state === "failed") throw new Error(eventData.failedReason || "Lesson generation failed");
                 }
               } catch (parseError) {
                 console.error("Failed to parse SSE event:", parseError);

@@ -1,10 +1,9 @@
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useContext, useRef, useState, useEffect } from "react";
 import html2pdf from "html2pdf.js";
 
 import LessonPDF from "../components/lesson/LessonPDF";
 import LessonViewer from "../components/lesson/LessonViewer";
-import CourseRoadmap from "../components/lesson/CourseRoadmap";
 import LessonLoadingProgress from "../components/lesson/LessonLoadingProgress";
 import LessonTransition from "../components/lesson/LessonTransition";
 import GoToTopButton from "../components/GoToTopButton";
@@ -16,14 +15,14 @@ import { AuthContext } from "../context/AuthContext";
 
 const Course = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { courseId, moduleIndex, lessonIndex } = useParams();
   const { isAuthenticated } = useContext(AuthContext);
 
   const pdfRef = useRef(null);
-  const [roadmapOpen, setRoadmapOpen] = useState(false);
   const [courseData, setCourseData] = useState(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isTransitioning] = useState(false);
+  const [quizScore, setQuizScore] = useState(null);
+  const [completionSaving, setCompletionSaving] = useState(false);
 
   // simple notification when feature not available yet
   const notifyComingSoon = () => {
@@ -74,6 +73,41 @@ const Course = () => {
       .save();
   };
 
+  const completeLesson = async () => {
+    const currentModule = courseData?.modules?.find(
+      (module) => module.moduleIndex === Number(moduleIndex),
+    );
+    if (!lesson?._id || !currentModule?._id) return;
+
+    try {
+      setCompletionSaving(true);
+      await api.post("/course/complete-lesson", {
+        moduleId: currentModule._id,
+        lessonId: lesson._id,
+        ...(quizScore !== null ? { quizScore } : {}),
+      });
+      setCourseData((currentCourse) => ({
+        ...currentCourse,
+        modules: currentCourse.modules.map((module) =>
+          module._id === currentModule._id
+            ? {
+                ...module,
+                lessons: module.lessons.map((courseLesson) =>
+                  courseLesson._id === lesson._id
+                    ? { ...courseLesson, isCompleted: true, quizScore }
+                    : courseLesson,
+                ),
+              }
+            : module,
+        ),
+      }));
+    } catch (completionError) {
+      console.error("Failed to complete lesson:", completionError);
+    } finally {
+      setCompletionSaving(false);
+    }
+  };
+
   if (isTransitioning) {
     return <LessonTransition />;
   }
@@ -116,14 +150,6 @@ const Course = () => {
 
   return (
     <>
-      <CourseRoadmap
-        courseData={courseData}
-        isOpen={roadmapOpen}
-        onClose={() => setRoadmapOpen(false)}
-        currentModuleIndex={Number(moduleIndex)}
-        currentLessonIndex={Number(lessonIndex)}
-      />
-
       <div
         style={{
           display: "flex",
@@ -147,38 +173,6 @@ const Course = () => {
             zIndex: 100,
           }}
         >
-          <button
-            onClick={() =>
-              navigate(`/course/${courseId}`, {
-                state: { from: location.pathname },
-              })
-            }
-            style={{
-              padding: "8px 16px",
-              borderRadius: "8px",
-              background: "rgba(99, 102, 241, 0.15)",
-              color: "#a5b4fc",
-              border: "1px solid rgba(99, 102, 241, 0.3)",
-              cursor: "pointer",
-              fontSize: "0.875rem",
-              fontWeight: "600",
-              transition: "all 0.2s ease",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = "rgba(99, 102, 241, 0.25)";
-              e.target.style.borderColor = "rgba(99, 102, 241, 0.5)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = "rgba(99, 102, 241, 0.15)";
-              e.target.style.borderColor = "rgba(99, 102, 241, 0.3)";
-            }}
-          >
-            🗺️ Roadmap
-          </button>
-
           <div style={{ display: "flex", gap: "1rem" }}>
             <button
               onClick={() => navigate("/")}
@@ -283,7 +277,32 @@ const Course = () => {
                 <h2 style={{ color: "#94a3b8" }}>Lesson not found</h2>
               </div>
             ) : (
-              <LessonViewer lesson={lesson} youtubeVideos={youtubeVideos} />
+              <>
+              <LessonViewer
+                lesson={lesson}
+                youtubeVideos={youtubeVideos}
+                onQuizScore={setQuizScore}
+                courseId={courseId}
+                moduleId={courseData?.modules?.find((module) => module.moduleIndex === Number(moduleIndex))?._id}
+              />
+              <div style={{ display: "flex", justifyContent: "center", marginTop: "2rem" }}>
+                <button
+                  onClick={completeLesson}
+                  disabled={lesson.isCompleted || completionSaving}
+                  style={{
+                    padding: "12px 20px",
+                    borderRadius: "8px",
+                    border: "none",
+                    cursor: lesson.isCompleted ? "default" : "pointer",
+                    background: lesson.isCompleted ? "rgba(34, 197, 94, 0.2)" : "#4f46e5",
+                    color: "white",
+                    fontWeight: "700",
+                  }}
+                >
+                  {lesson.isCompleted ? "✓ Lesson completed" : completionSaving ? "Saving progress..." : "Mark lesson complete"}
+                </button>
+              </div>
+              </>
             )}
 
             {/* Footer */}

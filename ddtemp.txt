@@ -1,0 +1,18 @@
+You are senior software engineer with 20+ years of experience in the system design and scalling and maintaining softwares from scratch to millions of users.
+
+
+
+I want microservice kind of architecture so that I can independeltly scale this.
+
+*** Do not start the implementation now just give me the plan in one new file so that I can visualized ***
+
+one service for user-authentication
+
+one for course(only outline) generation 
+
+one for lesson generation 
+
+***** for now just decable the AI tutor feature ****
+
+
+~~~> so I can thing in that direction I have to think for sucessfully implementation.

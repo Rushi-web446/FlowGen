@@ -5,22 +5,17 @@ import LessonNavigation from "./LessonNavigation";
 import LessonYouTubeSection from "./LessonYouTube";
 import Section from "./Section";
 import LessonMCQs from "./LessonMCQs";
-import { useState } from "react";
+import LessonResources from "./LessonResources";
+import LessonPractice from "./LessonPractice";
+import TutorChat from "./TutorChat";
 
-const LessonViewer = ({ lesson, youtubeVideos }) => {
-  console.log("=== LessonViewer Component ===");
-  console.log("1. lesson prop:", lesson);
-  console.log("2. lesson.content:", lesson.content);
-  console.log("3. youtubeVideos prop:", youtubeVideos);
+const LessonViewer = ({ lesson, youtubeVideos, onQuizScore, courseId, moduleId }) => {
   
   if (!lesson) return null;
 
   // The lesson sections are directly in lesson.content!
   const content = lesson.content || lesson;
   
-  console.log("4. content.opening:", content.opening);
-  console.log("5. content.coreExplanation:", content.coreExplanation);
-  console.log("6. content.mcqs:", content.mcqs);
 
   return (
     <div className="lesson-container">
@@ -87,9 +82,21 @@ const LessonViewer = ({ lesson, youtubeVideos }) => {
         </Section>
       )}
 
+      <LessonPractice task={lesson.handsOnTask || content.handsOnTask} />
+
+      <LessonResources resources={lesson.resources || content.resources} />
+
+      {lesson.retrievalCitations?.length > 0 && <Section title="Sources">
+        <ul>{lesson.retrievalCitations.map((citation) => <li key={citation.sourceId}>{citation.url ? <a href={citation.url} target="_blank" rel="noreferrer">{citation.title}</a> : citation.title}</li>)}</ul>
+      </Section>}
+
+      <Section title="Why this lesson?">
+        <p>{lesson.description || content.opening?.thePromise || "This lesson builds the skill needed for the next part of your course."}</p>
+      </Section>
+
       <LessonYouTubeSection videos={youtubeVideos} />
 
-      {content.mcqs && <LessonMCQs mcqs={content.mcqs} />}
+      {content.mcqs && <LessonMCQs mcqs={content.mcqs} onScoreChange={onQuizScore} />}
 
       {content.closing && (
         <Section title="Summary">
@@ -97,6 +104,8 @@ const LessonViewer = ({ lesson, youtubeVideos }) => {
           <p><strong>What's Next:</strong> {content.closing.whatsNext}</p>
         </Section>
       )}
+
+      <TutorChat courseId={courseId} moduleId={moduleId} lesson={lesson} />
 
     </div>
   );

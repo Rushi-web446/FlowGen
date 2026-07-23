@@ -3,8 +3,6 @@ import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios";
 import useGenerateLesson from "./useGenerateLesson";
 
-const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
-
 const useFetchLesson = ({ courseId, moduleIndex, lessonIndex }) => {
   const { isAuthenticated } = useContext(AuthContext);
 
@@ -93,6 +91,8 @@ const useFetchLesson = ({ courseId, moduleIndex, lessonIndex }) => {
       let description = generatedLesson.description;
       let content = generatedLesson.content;
       let youtubeQuery = generatedLesson.youtubeQuery;
+      let handsOnTask = generatedLesson.handsOnTask;
+      let resources = generatedLesson.resources;
 
       // If content itself has a nested "lesson" key with the actual section data, unwrap it
       if (content && content.lesson && typeof content.lesson === "object") {
@@ -103,6 +103,8 @@ const useFetchLesson = ({ courseId, moduleIndex, lessonIndex }) => {
         description = description || content.description;
         // The youtubeQuery with videos may be at content level, inner level, or both
         youtubeQuery = content.youtubeQuery || innerLesson.youtubeQuery || youtubeQuery;
+        handsOnTask = content.handsOnTask || handsOnTask;
+        resources = content.resources || resources;
         // The actual sections are in innerLesson
         content = innerLesson;
       }
@@ -112,6 +114,13 @@ const useFetchLesson = ({ courseId, moduleIndex, lessonIndex }) => {
         description,
         content,
         youtubeQuery,
+        handsOnTask,
+        resources,
+        retrievalCitations: generatedLesson.retrievalCitations || content?.retrievalCitations || [],
+        estimatedMinutes: generatedLesson.estimatedMinutes,
+        skillTags: generatedLesson.skillTags,
+        isCompleted: generatedLesson.isCompleted,
+        _id: generatedLesson._id,
       };
 
       console.log("normalizedLesson:", normalizedLesson);

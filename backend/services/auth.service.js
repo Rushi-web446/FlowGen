@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const env = require("../config/env");
 const { addUser, findByEmail } = require("../repository/user.repository.js");
 
 const SignupService = async ({ name, email, password }) => {
@@ -29,7 +30,7 @@ const SignupService = async ({ name, email, password }) => {
   // Generate JWT token
   const token = jwt.sign(
     { userId: newUser._id, email: newUser.email },
-    process.env.JWT_SECRET || "your-secret-key",
+    env.JWT_SECRET,
     { expiresIn: "7d" }
   );
 
@@ -69,7 +70,7 @@ const LoginService = async ({ email, password }) => {
   // Generate JWT token
   const token = jwt.sign(
     { userId: user._id, email: user.email },
-    process.env.JWT_SECRET || "your-secret-key",
+    env.JWT_SECRET,
     { expiresIn: "7d" }
   );
 

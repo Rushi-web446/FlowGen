@@ -20,6 +20,13 @@ const courseSchema = new mongoose.Schema(
       }
     ],
 
+    templateId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "CourseTemplate",
+      default: null,
+      index: true,
+    },
+
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

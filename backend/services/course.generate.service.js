@@ -3,6 +3,7 @@ const Grok = require("groq-sdk").default;
 const groq = new Grok({
   apiKey: process.env.GROQ_API_KEY,
 });
+const { assertSafeContent, validateLesson, recordUsage } = require("./generation-guard.service");
 
 const intent_generation_system_prompt = `
 
@@ -123,7 +124,11 @@ MANDATORY JSON SCHEMA:
           "realWorldProblem": "string (15-25 words: the pain point this lesson eradicates)",
           "learnerTakeaway": "string (10-20 words: the exact skill gained)",
           "completionCriteria": "string (10-20 words: how student verifies success)",
-          "briefDescription": "string (30-40 words: step-by-step what will be covered)"
+          "briefDescription": "string (30-40 words: step-by-step what will be covered)",
+          "estimatedMinutes": "number (15-60)",
+          "skillTags": ["string"],
+          "handsOnTask": { "title": "string", "instructions": "string", "deliverable": "string" },
+          "resources": [{ "title": "string", "type": "article|documentation|tool", "url": "string" }]
         }
       ]
     }
@@ -146,6 +151,7 @@ CORE MISSION:
 Take the 5 input fields and produce:
 1. A crystal-clear lesson (no fluff, exactly 3 MCQs)
 2. A YouTube search query that finds a video matching the lesson's specific problem
+3. A hands-on task and concise resource list that move the learner toward a portfolio-ready deliverable
 
 THE 5-INPUT CONTRACT (ABSOLUTE):
 For EACH input field, your output MUST explicitly deliver on its promise.
@@ -199,7 +205,17 @@ OUTPUT SCHEMA (COMPLETE):
   
   "youtubeQuery": {
     "query": "string"
-  }
+  },
+
+  "handsOnTask": {
+    "title": "string",
+    "instructions": "string",
+    "deliverable": "string"
+  },
+
+  "resources": [
+    { "title": "string", "type": "documentation|article|tool", "url": "string" }
+  ]
 }
 
 MCQ CONSTRAINTS:
@@ -256,8 +272,12 @@ const generateJsonFromLLM = async (
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
+      const startedAt = Date.now();
+      const model = attempt === retries && process.env.GROQ_FALLBACK_MODEL
+        ? process.env.GROQ_FALLBACK_MODEL
+        : process.env.GROQ_PRIMARY_MODEL || "llama-3.1-8b-instant";
       const response = await groq.chat.completions.create({
-        model: "llama-3.1-8b-instant",
+        model,
         temperature: 0.3,
         max_tokens: maxTokens,
         response_format: {
@@ -291,6 +311,12 @@ const generateJsonFromLLM = async (
         throw new Error(`JSON parse failed: ${parseError.message}`);
       }
 
+      assertSafeContent(parsed);
+      await recordUsage({
+        feature: "json_generation", provider: "groq", model,
+        inputTokens: response.usage?.prompt_tokens || 0, outputTokens: response.usage?.completion_tokens || 0,
+        latencyMs: Date.now() - startedAt, success: true,
+      });
       return parsed;
     } catch (err) {
       lastError = err;
@@ -322,6 +348,7 @@ const generateJsonFromLLM = async (
         continue;
       }
 
+      await recordUsage({ feature: "json_generation", provider: "groq", model: process.env.GROQ_PRIMARY_MODEL || "llama-3.1-8b-instant", success: false, error: err.message });
       throw err;
     }
   }
@@ -412,6 +439,9 @@ INPUT:
   "learnerTakeaway": "${lesson.learnerTakeaway}",
   "completionCriteria": "${lesson.completionCriteria}",
   "briefDescription": "${lesson.briefDescription}"
+  ,"estimatedMinutes": ${lesson.estimatedMinutes || 30}
+  ,"skillTags": ${JSON.stringify(lesson.skillTags || [])}
+  ,"handsOnTask": ${JSON.stringify(lesson.handsOnTask || null)}
 }
 
 RULES REMINDER:
@@ -426,7 +456,18 @@ Generate now.
 
 
 
-  return generateJsonFromLLM(lesson_generation_system_prompt, lesson_generation_user_prompt, 3000);
+  const response = await generateJsonFromLLM(lesson_generation_system_prompt, lesson_generation_user_prompt, 3000);
+  return validateLesson(response.lesson || response);
+};
+
+const generateTutorResponse = async ({ course, lesson, message, history, retrieval }) => {
+  const system = `You are a concise tutor. Stay within the current lesson and course. Use only the supplied context; say when context is insufficient. Return JSON with answer and followUpQuiz (one MCQ with question, options, answer).`;
+  const prompt = JSON.stringify({
+    course: course.title, lesson: lesson.title, lessonContent: lesson.content,
+    question: message, previousMessages: history.map(({ role, content }) => ({ role, content })),
+    retrievedSources: retrieval.context,
+  });
+  return generateJsonFromLLM(system, prompt, 900);
 };
 
 
@@ -469,4 +510,5 @@ module.exports = {
   generateYouTubeQueryService,
   generateHinglishService,
   intentGenerationService,
+  generateTutorResponse,
 };

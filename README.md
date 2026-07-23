@@ -249,6 +249,7 @@ GROQ_API_KEY=your_groq_api_key
 GEMINI_API_KEY=your_gemini_api_key
 YOUTUBE_API_KEY=your_youtube_data_api_key
 START_WORKER=true   # Set to "false" if you don't want to start worker with server
+FRONTEND_ORIGIN=http://localhost:3000
 ```
 
 Redis TLS is chosen automatically: `rediss://` enables TLS (Upstash/production); `redis://` disables TLS (local Docker).
@@ -286,7 +287,7 @@ cd backend
 npm install
 npm run dev
 ```
-Workers are started from `server.js` together with the API; you don't need separate worker terminals unless debugging.
+For local single-process development, workers start from `server.js` unless `START_WORKER=false`. Docker Compose runs the API and worker as separate services so they can be scaled independently.
 
 #### Frontend
 ```bash

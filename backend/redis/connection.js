@@ -1,9 +1,10 @@
 const IORedis = require("ioredis");
+const env = require("../config/env");
 
-const redisConnection = new IORedis({
-  host: "localhost",
-  port: 6379,
+const redisUrl = new URL(env.REDIS_URL);
+const redisConnection = new IORedis(env.REDIS_URL, {
   maxRetriesPerRequest: null,
+  tls: redisUrl.protocol === "rediss:" ? {} : undefined,
 });
 
 redisConnection.on("connect", () => {

@@ -38,6 +38,13 @@ const getQueueStats = async (req, res) => {
   }
 };
 
+const inspectDlq = async (req, res) => {
+  try {
+    const jobs = await lessonGenerationDeadLetterQueue.getJobs(["waiting", "delayed", "failed"], 0, 50, true);
+    res.json({ success: true, jobs: jobs.map((job) => ({ id: job.id, name: job.name, data: job.data, failedReason: job.failedReason, timestamp: job.timestamp })) });
+  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+};
+
 /**
  * Reprocess a failed DLQ job
  */
@@ -106,6 +113,7 @@ const clearQueue = async (req, res) => {
 
 module.exports = {
   getQueueStats,
+  inspectDlq,
   reprocessDlqJob,
   clearQueue,
 };

@@ -1,5 +1,5 @@
 const express = require("express");
-const { generateTopicAndDesciption, generateOutline, generateLesson, generateYouTubeQueryController } = require("../controllers/course.generate.controller.js");
+const { generateLesson, generateYouTubeQueryController } = require("../controllers/course.generate.controller.js");
 const { saveCourseOutlineToDB, getRecentCourses, getCourseDetails,
   completeLesson,
   getCurrentLessonContent,
@@ -7,18 +7,24 @@ const { saveCourseOutlineToDB, getRecentCourses, getCourseDetails,
   saveLesson,
   resolveNextLesson,
   getLessonDetails,
-  explainLesson,
-  checkHinglishStatus,
   getUserCourse,
   handleCourseGeneration,
 } = require("../controllers/course.controller.js");
 
 const { getYouTubeVideos } = require("../controllers/YouTube.controller.js");
 
-const { courseQueueController, lessonQueueController } = require("../controllers/queue.controller.js");
-
 const checkJwt = require("../middleware/auth.middleware");
 const syncUser = require("../middleware/user.sync.middleware");
+const validate = require("../middleware/validate");
+const {
+  generateOutlineSchema,
+  courseIdParamSchema,
+  resolveCourseSchema,
+  generateLessonSchema,
+  lessonQuerySchema,
+  completeLessonSchema,
+} = require("../validation/course.schemas");
+const { createLessonJob, readJob, streamJob } = require("../controllers/job.controller");
 
 
 const router = express.Router();
@@ -28,15 +34,13 @@ const router = express.Router();
 
 
 
-router.post("/generate/outline", checkJwt, syncUser, handleCourseGeneration);
+router.post("/generate/outline", checkJwt, syncUser, validate(generateOutlineSchema), handleCourseGeneration);
 
 
 
 
 
 
-
-router.post("/save/outline", checkJwt, syncUser, saveCourseOutlineToDB);
 
 router.get("/recent", checkJwt, syncUser, getRecentCourses); // users top 3 recent access course
 
@@ -44,7 +48,8 @@ router.get("/course", checkJwt, syncUser, getUserCourse); //  user's course hist
 
 
 
-router.get("/details/:id", checkJwt, syncUser, getCourseDetails); // course detailes for showing roadmap 
+router.get("/details/:id", checkJwt, syncUser, validate(courseIdParamSchema), getCourseDetails);
+router.get("/resolve/:courseId", checkJwt, syncUser, validate(resolveCourseSchema), resolveNextLesson);
 
 
 
@@ -58,7 +63,10 @@ router.get("/details/:id", checkJwt, syncUser, getCourseDetails); // course deta
 
 
 
-router.post("/generate/lesson", checkJwt, syncUser, generateLesson);
+router.post("/generate/lesson", checkJwt, syncUser, validate(generateLessonSchema), generateLesson);
+router.post("/jobs/lessons", checkJwt, syncUser, validate(generateLessonSchema), createLessonJob);
+router.get("/jobs/:jobId", checkJwt, syncUser, readJob);
+router.get("/jobs/:jobId/events", checkJwt, syncUser, streamJob);
 
 
 
@@ -83,10 +91,10 @@ router.post("/get/utube", checkJwt, syncUser, getYouTubeVideos);
 
 
 // crude on lesson 
-router.get("/check/lesson/:id", checkJwt, syncUser, checkLessonExists);
-// router.post("/generate/lesson", checkJwt, syncUser, generateLesson);
+router.get("/check/lesson", checkJwt, syncUser, validate(lessonQuerySchema), checkLessonExists);
+router.post("/complete-lesson", checkJwt, syncUser, validate(completeLessonSchema), completeLesson);
 router.post("/save/lesson", checkJwt, syncUser, saveLesson);
-router.get("/get/lesson/", checkJwt, syncUser, getCurrentLessonContent);
+router.get("/get/lesson", checkJwt, syncUser, validate(lessonQuerySchema), getCurrentLessonContent);
 
 
 

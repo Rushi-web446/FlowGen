@@ -31,7 +31,14 @@ function App() {
         }
       />
 
-      <Route path="/course/:courseId/resolve" element={<CourseResolver />} />
+      <Route
+        path="/course/:courseId/resolve"
+        element={
+          <ProtectedRoute>
+            <CourseResolver />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/course/:courseId"

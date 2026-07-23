@@ -32,6 +32,32 @@ const lessonSchema = new mongoose.Schema(
       required: true,
     },
 
+    estimatedMinutes: {
+      type: Number,
+      min: 5,
+      default: 30,
+    },
+
+    skillTags: [{ type: String, trim: true }],
+
+    handsOnTask: {
+      title: { type: String, trim: true },
+      instructions: String,
+      deliverable: String,
+    },
+
+    resources: [{
+      title: { type: String, trim: true },
+      type: { type: String, trim: true },
+      url: { type: String, trim: true },
+    }],
+
+    retrievalCitations: [{
+      sourceId: { type: mongoose.Schema.Types.ObjectId, ref: "KnowledgeSource" },
+      title: String,
+      url: String,
+    }],
+
     content: {
       type: mongoose.Schema.Types.Mixed,
       default: null,
@@ -56,6 +82,18 @@ const lessonSchema = new mongoose.Schema(
     isCompleted: {
       type: Boolean,
       default: false,
+    },
+
+    completedAt: {
+      type: Date,
+      default: null,
+    },
+
+    quizScore: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: null,
     },
 
     module: {
